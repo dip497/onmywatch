@@ -36,7 +36,7 @@ claude plugin update onmywatch@onmywatch
 | `/talk-is-cheap` | Senior-engineer lens on every code task: data structures and their invariants first, cost stated, simplest thing that holds, root-cause fixes. Adds an architecture note with a refactor shape when the structure around your change is wrong. Checks 13 quality areas and reports the top 3. | On in every session |
 | `/trust-me-bro` | A test must guard behaviour against a real bug, not mirror the code. Gates every new test, rejects tests that prove nothing, audits existing ones. | You or the agent |
 | `/lets-build-pyramids` | Architecture review before a feature is built: researches how others solved it, looks at it from six views, compares three real designs at today's size, 10x and 100x, and runs a pre-mortem. | You or the agent |
-| `/but-why` | First-principles redesign: separates facts from inherited choices and habits, then rebuilds the design from the facts. | You or the agent |
+| `/trust-issues` | First-principles redesign: separates facts from inherited choices and habits, then rebuilds the design from the facts. | You or the agent |
 | `/next-time-faster` | Run at the end of a long session. Finds the setup and steps that cost time and will come back, then proposes the lightest fix that holds: nothing, a doc pointer, a script, a hook, or as a last resort a skill. Builds only after approval and proves what it builds. | You |
 | `/brooooo` | Press it when a reply did not land or the agent got something wrong. It restates plainly, or owns the mistake and fixes it. | You |
 | `/show-me` | Shows the topic instead of explaining it: a text picture or Mermaid in the chat, or an HTML engineering sheet built from a small JSON spec and premade assets (`/show-me sheet`, `/show-me share`). | You |
@@ -69,7 +69,7 @@ Run one skill's cases:
 claude plugin eval . --tag lets-build-pyramids --runs 3 --allow-tools WebSearch WebFetch
 claude plugin eval . --tag just-tell-me --runs 3 --judge-model sonnet
 claude plugin eval . --tag talk-is-cheap trust-me-bro --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
-claude plugin eval . --tag but-why --runs 3 --scaffold --judge-model sonnet
+claude plugin eval . --tag trust-issues --runs 3 --scaffold --judge-model sonnet
 claude plugin eval . --tag next-time-faster --runs 3 --ablation none --judge-model sonnet
 claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 ```
@@ -90,10 +90,10 @@ Latest scores, 3 runs per case:
 | `just-tell-me` | Partial failure: no invented cause, gives the check | 1.00 | 1.00 |
 | `just-tell-me` | Third "still broken": stops and asks for evidence | 0.67 | n/a |
 | `just-tell-me` | "Thanks": no invented next step | 1.00 | n/a |
-| `but-why` | Fourth fix after three failed: names the shared premise first | 0.73 | 0.20 |
-| `but-why` | Users in two orgs: membership table, not a second column | 0.58 | 0.17 |
-| `but-why` | Special cases: keeps the rate limit and cites why it exists | 1.00 | 0.44 |
-| `but-why` | Small change that fits: no ceremony | 1.00 | 1.00 |
+| `trust-issues` | Fourth fix after three failed: names the shared premise first | 0.73 | 0.20 |
+| `trust-issues` | Users in two orgs: membership table, not a second column | 0.58 | 0.17 |
+| `trust-issues` | Special cases: keeps the rate limit and cites why it exists | 1.00 | 0.44 |
+| `trust-issues` | Small change that fits: no ceremony | 1.00 | 1.00 |
 | `talk-is-cheap` | Hotfix next to a duplicated rule: small fix plus architecture note | 1.00 | 0.60 |
 | `talk-is-cheap` | Review an unbounded cache: top 3 risks only | 1.00 | 0.75 |
 | `talk-is-cheap` | Over-built plan for 200 users: clear verdict, simpler design | 0.89 | 0.67 |
@@ -117,7 +117,7 @@ Latest scores, 3 runs per case:
 ## Credits
 
 - `just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT), with lessons from [caveman](https://github.com/JuliusBrussee/caveman) by Julius Brussee and [caveman-micro](https://github.com/kuba-guzik/caveman-micro).
-- `brooooo` adapts `bro`, and `but-why` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise`, from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
+- `brooooo` adapts `bro`, and `trust-issues` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise`, from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
 - `show-me` draws on [show-me](https://github.com/humanlayer/skills/tree/main/plugins/show-me) by HumanLayer (MIT), the [html-plan](https://github.com/anthropics/claude-plugins-community/tree/main/html-plan) plugin by Thariq Shihipar (MIT), [archify](https://github.com/tt-a1i/archify) by tt-a1i (MIT), Claude's artifact design and diagramming guidance, and Andrej Karpathy's note on asking for STE text, diagrams and HTML instead of prose.
 - `talk-is-cheap` adapts the ladder and root-cause rule from [ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT), pstack's `model-the-domain` and `foundational-thinking`, and the ISO/IEC 25010 quality model.
 - `trust-me-bro` adapts [test-audit](https://github.com/openclaw/openclaw/blob/main/.agents/skills/test-audit/SKILL.md) from openclaw (MIT) and pstack's `principle-test-behavior-not-implementation`.

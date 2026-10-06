@@ -69,4 +69,4 @@ This report is a walkthrough the reader asked for. Give every section below in f
 - At least one insight the reader would not have reached alone. If the review only confirms the first idea, dig further.
 - Every number has its source or its arithmetic.
 - Do not build for scale nobody needs; a written ceiling beats a premature system.
-- If the requirement itself looks wrong, switch to `/but-why`.
+- If the requirement itself looks wrong, switch to `/trust-issues`.

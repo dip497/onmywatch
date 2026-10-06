@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: but-why-fence
-tags: [but-why]
+name: trust-issues-fence
+tags: [trust-issues]
 context:
   scaffold_script: scaffold.sh
 execution:

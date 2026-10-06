@@ -1,5 +1,5 @@
 ---
-tags: [but-why]
+tags: [trust-issues]
 max_turns: 6
 allowed_tools: [Skill, Read, Glob, Grep]
 ---

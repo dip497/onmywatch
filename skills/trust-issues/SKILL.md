@@ -1,9 +1,9 @@
 ---
-name: but-why
+name: trust-issues
 description: "First-principles redesign. Apply when a new requirement does not fit the current design, when two or more fixes built on the same assumption have failed, when a design keeps growing special cases, or when asked to rethink or redesign. Separate what must be true from what is only inherited, then rebuild the design from what must be true."
 ---
 
-# but-why
+# trust-issues
 
 Reason from what must be true, not from what already exists.
 
@@ -44,7 +44,7 @@ Do not apply it to a small, local change that the current design already handles
 
 6. **Compare with what exists.** Keep every part of the current design that already matches the new one. A first-principles design is not a rewrite by default; often it shows that most of the code is right and one assumption is wrong.
 
-7. **Land it in steps, removal first.** Delete what the new design makes dead before you build on top. Then order the change into small steps that can each be verified on their own. Carry it through every reference: types, callers, tests, docs. Remove the old path in the same change, not "later".
+7. **Land it like the Ship of Theseus: part by part, the system running the whole time.** No big-bang rewrite. Delete what the new design makes dead before you build on top. Then order the change into small steps that can each be verified on their own. Carry it through every reference: types, callers, tests, docs. Remove the old path in the same change, not "later".
 
 ## Output
 
