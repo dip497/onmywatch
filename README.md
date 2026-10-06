@@ -47,24 +47,36 @@ claude plugin update onmywatch@onmywatch
 
 ## Evals
 
-`evals/` holds cases for `claude plugin eval`. Each case runs with and without the plugin, so the score shows what the plugin adds.
+Each skill with evals has a folder under `evals/<skill>/<case>/`. A case is either `prompt.md` plus `graders/*.md`, or a `case.yaml` when it needs an earlier conversation (`history.jsonl`) or starting files (`scaffold.sh`). Write the conversation as `history.md` with `## User` and `## Assistant` sections, then convert it:
 
 ```
-claude plugin eval . --runs 3 --allow-tools WebSearch WebFetch
+python3 evals/history.py evals/<skill>/<case>/history.md
 ```
 
-Latest run of `lets-build-pyramids`, 3 runs per case:
+Run one skill's cases:
 
-| Case | With plugin | Without |
-|---|---|---|
-| Audit log for a multi-tenant SaaS | 0.90 | 0.57 |
-| Daily digest email for 50k users | 1.00 | 0.67 |
+```
+claude plugin eval . --tag lets-build-pyramids --runs 3 --allow-tools WebSearch WebFetch
+claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
+```
+
+Latest scores, 3 runs per case:
+
+| Skill | Case | With plugin | Without |
+|---|---|---|---|
+| `lets-build-pyramids` | Audit log for a multi-tenant SaaS | 0.90 | 0.57 |
+| `lets-build-pyramids` | Daily digest email for 50k users | 1.00 | 0.67 |
+| `brooooo` | Agent did the opposite of what was asked | 0.90 | n/a |
+| `brooooo` | Agent claimed a test passed without running it | 0.83 | n/a |
+| `brooooo` | Reply full of jargon | 0.73 | n/a |
+
+`brooooo` has no "without" score: it is a command you type, so it does not exist without the plugin.
 
 ## Adding a skill
 
 1. Create `skills/<name>/SKILL.md` with `name` and `description` frontmatter.
 2. Add a row to the table above and to `skills/onmywatch/SKILL.md`.
-3. Add an eval case under `evals/<name>/` if the skill changes how the agent works.
+3. Add eval cases under `evals/<name>/<case>/` and tag them with the skill name.
 4. Bump `version` in `.claude-plugin/plugin.json`.
 
 ## Credits

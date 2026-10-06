@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: brooooo-did-not-land
+tags: [brooooo]
+context:
+  history_file: history.jsonl
+execution:
+  prompt: "/onmywatch:brooooo i didn't get any of that"
+  max_turns: 4
+  allowed_tools: [Skill]
+graders:
+  - name: plain
+    type: llm
+    weight: 2
+    criteria: "The reply explains a cache stampede in plain everyday words with no unexplained jargon (no bare TTL, QPS, origin, singleflight, XFetch, thundering herd), in about a short paragraph plus a few bullets or less."
+  - name: keeps-facts
+    type: llm
+    weight: 2
+    criteria: "The reply keeps the key facts: a popular saved (cached) value expires, many requests then miss it at the same moment, they all go to the slow source at once and overload it, and the fixes include letting only one request refresh it while others wait, refreshing slightly early or at random times, and serving the old value while refreshing."
+  - name: no-filler
+    type: llm
+    weight: 1
+    criteria: "The reply has no apology paragraph, no 'in other words' or 'let me explain', and no defence of the earlier answer."

@@ -1,5 +1,5 @@
 ---
-name: pyramids-digest
+name: lets-build-pyramids-digest
 tags: [lets-build-pyramids]
 max_turns: 30
 timeout_seconds: 900

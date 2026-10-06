@@ -1,31 +1,59 @@
 ---
 name: brooooo
-description: Invoke with /brooooo when the last reply did not land or the agent did something wrong. Restates it in plain words, or owns the mistake and fixes it.
+description: Invoke with /brooooo when the agent is going the wrong way, did something wrong, or gave a reply that did not land. The reader is frustrated. Stop, find where you drifted from what they asked, and get back on their track.
 disable-model-invocation: true
 ---
 
 # brooooo
 
-The reader just said "brooooo". Something about your last turn was off. Work out which case it is from what they wrote and what you did.
+The reader just said "brooooo". That is frustration: "why are you doing this?" Something in your recent turns went against what they want.
 
-## It did not land
+## 1. Stop
 
-Too dense, too technical, too long. Say it again, simpler.
+Do not continue the current plan. Do not finish the step you were on. Do not defend it.
 
-- Plain words. No jargon, no internal names, no acronyms unless you explain them.
-- Shorter than before. Lead with what it means for the reader.
-- Keep every fact that matters, including anything they must decide or do.
+## 2. Find the drift
 
-## You did something wrong
+Re-read the reader's own messages in this conversation, newest first, and the instructions they gave earlier. Then compare them with what you actually did.
 
-Wrong file, wrong guess, ignored an instruction, did more than asked, claimed something you had not checked.
+Work out which case this is:
 
-1. Say what you did wrong in one line. Plain, no grovelling.
-2. Undo or fix it. If undoing is risky or touches something shared, say what you would do and ask first.
+| Case | Sign |
+|---|---|
+| Wrong direction | You did the opposite of what they asked, or something they did not ask for: a different approach, extra scope, a guess instead of their choice. |
+| Wrong result | You broke something, edited the wrong file, ignored an instruction, or claimed something you had not checked. |
+| Did not land | Your reply was too long, too dense or too technical to use. |
+
+## 3. Reply
+
+For a wrong direction or a wrong result, your first sentence names your mistake, before any result or fix. This beats any "answer first" or brevity rule. Examples:
+
+- "You asked for X. I was doing Y."
+- "I said the test passes. I had not run it."
+- "I deleted the wrong file."
+
+Then:
+
+Wrong direction:
+
+1. First line, before anything else: "You asked for X. I was doing Y." Quote or name their words. This beats any "answer first" style rule.
+2. Undo anything you changed on the wrong path. If undoing is risky or touches something shared, say what you would undo and ask first.
+3. Do X, their way. If you cannot tell what X is, ask one short question and wait.
+
+Wrong result:
+
+1. First line, before anything else: what you did wrong. If you claimed something that was false or unchecked, name the claim: "I said X. That was wrong." or "…I had not checked it." This beats any "answer first" style rule: the admission comes before the fix.
+2. Fix it, or ask first if the fix is risky.
 3. Say what is true now and how to see it.
 
-If you cannot tell what was wrong, name your best guess and ask one short question.
+Did not land:
 
-## Both cases
+1. Do not comment on your last answer. Start straight with the plain version. Say it again in plain words, shorter, starting with what it means for the reader.
+2. Keep every fact they need, including anything they must decide or do.
 
-No apology paragraph, no "in other words", no defending the last reply.
+## Rules
+
+- No apology paragraph, no "in other words" or "in plain terms", no explaining why you did it. Start with the content itself.
+- Do not swing to the other extreme. Fix the one thing that was off.
+- What they said wins over your earlier plan, your own idea of better, and any skill you were following.
+- If you have been told the same thing twice, say so in one line and follow it from now on.

@@ -1,5 +1,5 @@
 ---
-name: pyramids-audit-log
+name: lets-build-pyramids-audit-log
 tags: [lets-build-pyramids]
 max_turns: 30
 timeout_seconds: 900
