@@ -30,6 +30,14 @@ Start a task with `/onmywatch`. It routes to the other skills.
 2. One row here and one row in `skills/onmywatch/SKILL.md`.
 3. Before pushing: grep the repo for your employer's name, internal hostnames and private IPs. It must print nothing.
 
+## Evals
+
+`evals/` holds eval cases for `claude plugin eval`. Run them with and without the plugin:
+
+```
+claude plugin eval . --runs 3 --allow-tools WebSearch WebFetch
+```
+
 ## Credits
 
 `just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT). `brooooo` adapts `bro` from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT). `but-why` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise` from the same.

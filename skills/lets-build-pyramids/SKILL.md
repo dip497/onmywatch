@@ -1,61 +1,72 @@
 ---
 name: lets-build-pyramids
-description: "Design and scalability check for a feature. Apply before building or approving a feature, an endpoint, a job, a cache or a data model, and when asked 'will this scale', 'is this designed well' or 'what breaks at 10x'. Forces a pass over design principles and growth limits before code."
+description: "Architecture review for a feature before it is built. Apply when planning or approving a feature, service, endpoint, job, cache or data model, and when asked 'will this scale', 'how should we design this', 'is this the right architecture' or 'what breaks at 10x'. Researches how others solved it, compares real alternatives with numbers, and stress-tests the choice."
 ---
 
 # lets-build-pyramids
 
-Build it like a pyramid: base first, sized for the weight it will carry, still standing when it grows.
+A pyramid is designed from the base, sized for the weight it will carry, and still standing 4,500 years later. Design features the same way.
 
-**Why:** Most features work on day one with ten rows and one user. They break later at a size nobody checked, in a place that is now expensive to change.
+A checklist filled in from memory is not a design review. This skill is research and thinking first; the answer comes last.
 
-## 1. Design
+## 1. Ground it
 
-Answer each in one line. "Not sure" is an answer; go and find out.
+Find out what is really there before you reason about it.
 
-| Principle | Question |
+- Read the code, schema and docs the feature touches, whole. Note the patterns this codebase already uses for the same kind of problem.
+- Get the real numbers: rows, users, tenants, requests per second, payload sizes, growth per month. Query or measure them. If you cannot, ask for them once, and state the assumption you use meanwhile.
+- Write the goal in one sentence as an outcome, and the hard constraints.
+
+## 2. Research how others solved it
+
+Most features are a known problem in disguise: a queue, a fan-out, a counter, an audit trail, a sync, a search, a rate limit.
+
+- Name the known problem this is.
+- Look up how mature systems and well-known engineering write-ups solve it, and what the libraries or platforms in this stack already offer. Search the web and the official docs; do not rely on memory.
+- Cite each source in one line: what it does and what it teaches here.
+
+## 3. Look at it from every side
+
+Walk the feature through each view and write what that person would worry about:
+
+| View | Asks |
 |---|---|
-| One owner | Which single module or service owns this data and this decision? |
-| Right layer | Is each decision in the lowest layer that owns it, not spread across callers? |
-| Data first | Is the data shape right for the main read and write paths? |
-| Boundaries | Are inputs checked once, at the edge? Do errors reach the caller with a next step? |
-| Reuse | Does a helper, library or platform feature already do this? |
-| Simple | Is there anything here with a single use: a class, a flag, a layer? Remove it. |
-| Safe to repeat | If it runs twice, crashes halfway or is retried, does it end in the same state? |
-| Concurrency | What happens if two actors change the same thing at once? |
-| Lifecycle | Everything it opens, caches or spawns: who closes it, and when? |
-| Reversible | Can it be turned off or rolled back without a data fix? |
+| User | What do they feel when it is slow, wrong or down? |
+| Data | Who owns it, how it grows, what must stay consistent, what can be stale. |
+| Operator at 3am | How it fails, how you notice, how you recover, what a retry does. |
+| Security and tenants | Who can see what; can one tenant hurt another? |
+| Cost | Money per request or per run, today and at 100x. |
+| Next year | The three requirements most likely to come next. Does this design bend or break for them? |
 
-## 2. Scale
+## 4. Design real alternatives
 
-Take the real numbers today, then ask what happens at 10x and 100x.
+Sketch at least three designs that differ in architecture, not in detail. Include the most boring one that could work and one bolder one.
 
-| Axis | Question |
-|---|---|
-| Data | Rows, documents, file size. Does any path read all of it? |
-| Traffic | Requests per second, concurrent users, peak versus average. |
-| Tenants | Does one large tenant slow down the others? |
-| Hot path | Calls per request: queries, network, model calls. Any N+1? |
-| Memory | Does anything grow without a bound: caches, queues, sessions, lists? |
-| Limits | Timeouts, rate limits, pool sizes, payload caps. Which one is hit first? |
-| Cost | Money per request or per run, at 100x. |
-| Failure | When a dependency is slow or down, does this fail fast or pile up? |
+For each: a small diagram (ASCII or Mermaid), how data flows, and where it first breaks.
 
-For each axis, name the first thing that breaks and roughly at what size. If you cannot estimate, measure or say so.
+Then compare them in a scale table: one row per design, columns for today, 10x and 100x. In each cell put the number that limits that design (storage, writes per second, latency, memory or cost) and whether it still holds. Under the table, show the arithmetic for each number. A table that stops at today's size is not a comparison.
 
-## 3. Verdict
+## 5. Pre-mortem the winner
 
-Show this before writing code:
+Pick the design. Then assume it is a year later and it failed badly. Write the three most likely reasons. Change the design for each one, or write it down as a known ceiling with the size where it bites and the upgrade path.
+
+## 6. Report
+
+This report is a walkthrough the reader asked for. Give every section below in full, even when a brevity style is active; lead with the verdict, then the sections.
 
 | Section | Content |
 |---|---|
-| Fine as is | Points that hold at 100x. |
-| Fix now | Problems that are cheap now and expensive later. Each with the fix. |
-| Fix later | Problems with a known ceiling. Each with the size where it bites and the upgrade path. |
+| Problem | Goal, constraints, real numbers, and which known problem this is. |
+| What others do | Sources and what each teaches. |
+| Options | The designs, diagrams and the scale table at today, 10x and 100x. |
+| Choice | The winner, why each other lost, and what was surprising. |
+| Pre-mortem | The failure reasons and what you changed. |
+| Build order | Numbered steps, foundation first, each with how it is checked. |
 | Unknown | What you could not check, and how to check it. |
 
-## Stop
+## Quality bar
 
-- Do not over-build for scale nobody needs. A known ceiling written down beats a premature system.
-- Do not mark a point fine without a reason or a number.
-- If the design itself is wrong, switch to `/but-why`.
+- At least one insight the reader would not have reached alone. If the review only confirms the first idea, dig further.
+- Every number has its source or its arithmetic.
+- Do not build for scale nobody needs; a written ceiling beats a premature system.
+- If the requirement itself looks wrong, switch to `/but-why`.
