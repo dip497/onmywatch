@@ -1,0 +1,7 @@
+{
+  "name": "onmywatch",
+  "owner": { "name": "dipendra" },
+  "plugins": [
+    { "name": "onmywatch", "source": "./", "description": "How dipendra works with coding agents: one entry skill, small principle skills." }
+  ]
+}
