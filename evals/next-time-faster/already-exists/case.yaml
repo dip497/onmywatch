@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: next-time-faster-already-exists
+tags: [next-time-faster]
+context:
+  history_file: history.jsonl
+execution:
+  prompt: "/onmywatch:next-time-faster"
+  max_turns: 12
+  allowed_tools: [Skill, Read, Glob, Grep]
+graders:
+  - name: no-duplicate
+    type: llm
+    weight: 2
+    criteria: >-
+      The proposal does not create a new check script or skill, because make check already exists; it proposes making it findable, for example a one-line pointer in AGENTS.md or CLAUDE.md saying to run make check before committing.
+  - name: env-pointer
+    type: llm
+    weight: 1
+    criteria: >-
+      It also proposes recording that API keys live in .env.local (for example a line in AGENTS.md), without copying any secret values.
+  - name: light
+    type: llm
+    weight: 1
+    criteria: >-
+      At most two items are proposed for building, and no new skill is proposed.

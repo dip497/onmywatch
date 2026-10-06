@@ -19,3 +19,4 @@ Read the request, pick the skills below that apply, and follow them.
 | `/show-me` | A topic is hard to follow in prose: show it as a text picture, a diagram, or an HTML sheet to open or share. |
 | `/talk-is-cheap` | On in every session: data structures first, cost stated, root-cause fixes, architecture note when the structure is wrong. |
 | `/trust-me-bro` | You write, change or review tests, or a fix needs proof. |
+| `/next-time-faster` | End of a long session: turn repeated setup and steps into the lightest fix that holds. |

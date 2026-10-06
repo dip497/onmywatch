@@ -1,0 +1,15 @@
+schema_version: "1.1"
+name: next-time-faster-one-off
+tags: [next-time-faster]
+context:
+  history_file: history.jsonl
+execution:
+  prompt: "/onmywatch:next-time-faster"
+  max_turns: 12
+  allowed_tools: [Skill, Read, Glob, Grep]
+graders:
+  - name: nothing
+    type: llm
+    weight: 2
+    criteria: >-
+      The reply concludes that nothing in this session is worth automating (the rename was a one-off) and keeps the answer short, without inventing scripts, hooks or skills.

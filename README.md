@@ -37,6 +37,7 @@ claude plugin update onmywatch@onmywatch
 | `/trust-me-bro` | A test must guard behaviour against a real bug, not mirror the code. Gates every new test, rejects tests that prove nothing, audits existing ones. | You or the agent |
 | `/lets-build-pyramids` | Architecture review before a feature is built: researches how others solved it, looks at it from six views, compares three real designs at today's size, 10x and 100x, and runs a pre-mortem. | You or the agent |
 | `/but-why` | First-principles redesign: separates facts from inherited choices and habits, then rebuilds the design from the facts. | You or the agent |
+| `/next-time-faster` | Run at the end of a long session. Finds the setup and steps that cost time and will come back, then proposes the lightest fix that holds: nothing, a doc pointer, a script, a hook, or as a last resort a skill. Builds only after approval and proves what it builds. | You |
 | `/brooooo` | Press it when a reply did not land or the agent got something wrong. It restates plainly, or owns the mistake and fixes it. | You |
 | `/show-me` | Shows the topic instead of explaining it: a text picture or Mermaid in the chat, or an HTML engineering sheet built from a small JSON spec and premade assets (`/show-me sheet`, `/show-me share`). | You |
 | `/no-added-comments` | Keeps diffs free of comments the agent added. | You or the agent |
@@ -68,6 +69,7 @@ Run one skill's cases:
 claude plugin eval . --tag lets-build-pyramids --runs 3 --allow-tools WebSearch WebFetch
 claude plugin eval . --tag just-tell-me --runs 3 --judge-model sonnet
 claude plugin eval . --tag talk-is-cheap trust-me-bro --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
+claude plugin eval . --tag next-time-faster --runs 3 --ablation none --judge-model sonnet
 claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 ```
 
@@ -89,6 +91,10 @@ Latest scores, 3 runs per case:
 | `talk-is-cheap` | Typo question: no lecture | 1.00 | 0.67 |
 | `talk-is-cheap` | Session lookup, duplicate finder (both arms pass) | 1.00 | 1.00 |
 | `trust-me-bro` | Mirror test, never-failed regression, keep a contract test, write tests | 0.90–1.00 | 0.83–1.00 |
+| `next-time-faster` | Server restarted 4 times by hand: proposes a script, drops the one-off migration | 1.00 | n/a |
+| `next-time-faster` | `make check` already exists: a pointer, no duplicate | 1.00 | n/a |
+| `next-time-faster` | One-off rename: nothing to automate | 1.00 | n/a |
+| `next-time-faster` | Weekly triage with repeated rules: a skill, rules kept out of CLAUDE.md | 1.00 | n/a |
 
 `brooooo` has no "without" score: it is a command you type, so it does not exist without the plugin.
 
@@ -106,6 +112,7 @@ Latest scores, 3 runs per case:
 - `show-me` draws on [show-me](https://github.com/humanlayer/skills/tree/main/plugins/show-me) by HumanLayer (MIT), the [html-plan](https://github.com/anthropics/claude-plugins-community/tree/main/html-plan) plugin by Thariq Shihipar (MIT), [archify](https://github.com/tt-a1i/archify) by tt-a1i (MIT), Claude's artifact design and diagramming guidance, and Andrej Karpathy's note on asking for STE text, diagrams and HTML instead of prose.
 - `talk-is-cheap` adapts the ladder and root-cause rule from [ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT), pstack's `model-the-domain` and `foundational-thinking`, and the ISO/IEC 25010 quality model.
 - `trust-me-bro` adapts [test-audit](https://github.com/openclaw/openclaw/blob/main/.agents/skills/test-audit/SKILL.md) from openclaw (MIT) and pstack's `principle-test-behavior-not-implementation`.
+- `next-time-faster` draws on pstack's `reflect`, `automate-me`, `encode-lessons-in-structure` and `build-the-lever`, and Matt Pocock's `retro`.
 
 ## License
 

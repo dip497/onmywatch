@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: next-time-faster-judgement-workflow
+tags: [next-time-faster]
+context:
+  history_file: history.jsonl
+execution:
+  prompt: "/onmywatch:next-time-faster"
+  max_turns: 12
+  allowed_tools: [Skill, Read, Glob, Grep]
+graders:
+  - name: skill-justified
+    type: llm
+    weight: 2
+    criteria: >-
+      The proposal recommends a reusable skill or written procedure for the weekly bug triage, because it recurs every week and needs judgement, and it includes the two rules the user repeats: severity 1 means data loss or full outage, and owners come from docs/OWNERS.md.
+  - name: eval-plan
+    type: llm
+    weight: 1
+    criteria: >-
+      The proposal says the new skill will be checked with an eval or a test run before it is kept, or names how it will be proven.
+  - name: waits
+    type: llm
+    weight: 1
+    criteria: >-
+      The reply proposes and stops for approval before creating the skill.

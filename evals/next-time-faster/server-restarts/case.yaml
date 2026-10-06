@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: next-time-faster-server-restarts
+tags: [next-time-faster]
+context:
+  history_file: history.jsonl
+execution:
+  prompt: "/onmywatch:next-time-faster"
+  max_turns: 12
+  allowed_tools: [Skill, Read, Glob, Grep]
+graders:
+  - name: script
+    type: llm
+    weight: 2
+    criteria: >-
+      The proposal recommends a script (for example scripts/dev-up.sh or a restart script) that kills the old process on port 8000, starts the API with the venv and DATABASE_URL, and waits for /health, rather than a new skill.
+  - name: drops-migration
+    type: llm
+    weight: 2
+    criteria: >-
+      The one-time column rename migration is dropped or marked as a one-off, not proposed for automation.
+  - name: waits
+    type: llm
+    weight: 1
+    criteria: >-
+      The reply proposes and stops for approval; it does not claim to have already created files or committed anything.

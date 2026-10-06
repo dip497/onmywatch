@@ -1,6 +1,6 @@
 {
   "name": "onmywatch",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "A stack of skills for coding agents: one entry skill that picks the rest, small skills for how work gets done.",
   "author": {
     "name": "griflet"
