@@ -1,0 +1,46 @@
+{
+  "title": "How onmywatch Works",
+  "meta": "Claude Code plugin · v0.20 · github.com/dip497/onmywatch",
+  "lead": {
+    "answer": "onmywatch is one plugin. Skills change how the agent answers, designs and recovers.",
+    "points": [
+      "just-tell-me runs in every session. You start the others, or the agent does.",
+      "Each skill has evals that run with and without the plugin.",
+      "A change reaches your session only after a version bump and an update."
+    ]
+  },
+  "panels": [
+    {"title": "Four folders hold the whole plugin.", "ref": "repository root",
+     "tree": {"root": "onmywatch", "sub": "one plugin, one marketplace", "items": [
+       ["`skills/`", "one folder per skill, one SKILL.md in each"],
+       ["`hooks/`", "starts just-tell-me in every session"],
+       ["`evals/`", "test cases for each skill"],
+       ["`.claude-plugin/`", "name, version and marketplace"]]}},
+    {"title": "The description decides when a skill starts.", "ref": "skills/brooooo/SKILL.md",
+     "anno": [
+       {"text": "name: brooooo", "why": "the command you type"},
+       {"text": "description: Invoke when the agent goes the wrong way", "why": "the agent matches your words to this"},
+       {"text": "disable-model-invocation: true", "why": "the agent cannot start it", "kind": "wrong"}]},
+    {"title": "Three skills can start on their own.", "ref": "trigger per skill", "half": true,
+     "table": {"head": ["Skill", "Agent starts it"], "rows": [
+       ["just-tell-me", "ok: Every session"], ["lets-build-pyramids", "ok: Before a feature"],
+       ["but-why", "ok: When fixes fail"], ["brooooo", "bad: Only you"], ["blueprint", "bad: Only you"]]}},
+    {"title": "The plugin raises every score.", "ref": "evals, 3 runs per case", "half": true,
+     "limits": [
+       {"label": "Design review, audit log", "value": "0.90 · was 0.57", "pct": 90},
+       {"label": "Estimate in agent time", "value": "1.00 · was 0.60", "pct": 100},
+       {"label": "brooooo, wrong direction", "value": "0.90", "pct": 90}]},
+    {"title": "A push reaches your session through the plugin cache.", "ref": "dashed is a step you run",
+     "caption": "Without a version bump, `plugin update` keeps the old copy.",
+     "diagram": {
+       "nodes": [
+         {"id": "repo", "label": "Local repo", "sub": "~/projects/onmywatch", "col": 0, "row": 0},
+         {"id": "gh", "label": "GitHub", "sub": "dip497/onmywatch", "col": 1, "row": 0},
+         {"id": "cache", "label": "Plugin cache", "sub": "one folder per version", "col": 2, "row": 0, "store": true},
+         {"id": "session", "label": "Session", "sub": "after restart", "col": 2, "row": 1}],
+       "edges": [
+         {"from": "repo", "to": "gh", "label": "git push", "new": true},
+         {"from": "gh", "to": "cache", "label": "plugin update", "new": true},
+         {"from": "cache", "to": "session", "label": "loads skills"}]}}
+  ]
+}

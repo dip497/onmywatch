@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How onmywatch Works</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Readability floor: body 17px, nothing under 14px, text contrast 4.5:1 or more in both themes. */
 :root{
@@ -90,78 +89,38 @@ td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
 .timeline div::before{content:"";position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border:2px solid var(--line);border-radius:50%;background:var(--paper)}
 .timeline div b{display:block;font-size:17px;color:var(--ink);font-weight:600}
 
+/* Mechanism diagram: inline SVG. Boxes are opaque so no line shows through; every arrow has a label. */
+figure.diagram{margin:0}
+figure.diagram .scroll{overflow-x:auto}
+figure.diagram svg{display:block;width:100%;max-width:100%;height:auto;min-width:680px;color:var(--ink)}
+figure.diagram .node{fill:var(--paper);stroke:currentColor;stroke-width:1.5}
+figure.diagram .node.new{stroke:var(--note);stroke-dasharray:6 4}
+figure.diagram .node.store{fill:var(--fill)}
+figure.diagram .edge{fill:none;stroke:currentColor;stroke-width:1.5}
+figure.diagram .edge.new{stroke:var(--note);stroke-dasharray:6 4}
+figure.diagram .lbl{font:600 15px var(--sans);fill:currentColor}
+figure.diagram .sub{font:13px var(--sans);fill:var(--muted)}
+figure.diagram .elbl{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .elbl.new{fill:var(--note)}
+figure.diagram .mask{fill:var(--paper)}
+figure.diagram figcaption{font-size:15px;color:var(--muted);margin-top:10px}
+
 @media (max-width:760px){
   .sheet{margin:0;border-width:0 0 1.5px}
   .titleblock,.grid{padding-left:16px;padding-right:16px}
   .lead{margin-left:16px;margin-right:16px}
   .grid{grid-template-columns:1fr}.panel.w6{grid-column:span 2}
 }
+figure.diagram .scroll,div.scroll{overflow-x:auto}
 </style>
 </head>
 <body>
 <div class="sheet">
-  <div class="titleblock">
-    <h1>How onmywatch Works</h1>
-    <span class="meta">Claude Code plugin · v0.17 · github.com/dip497/onmywatch</span>
-  </div>
-  <div class="lead">
-    <p>onmywatch is one plugin. Skills change how the agent answers, designs and recovers.</p>
-    <ul>
-      <li>just-tell-me runs in every session. You start the others, or the agent does.</li>
-      <li>Each skill has evals that run with and without the plugin.</li>
-      <li>A change reaches your session only after a version bump and an update.</li>
-    </ul>
-  </div>
-  <div class="grid">
-    <section class="panel">
-      <header><span class="badge">A</span><div><h2>Four folders hold the whole plugin.</h2><span class="ref">repository root</span></div></header>
-      <div class="body tree">
-        <div class="root"><b>onmywatch</b><small>one plugin, one marketplace</small></div>
-        <ul>
-          <li><code>skills/</code><small>one folder per skill, one SKILL.md in each</small></li>
-          <li><code>hooks/</code><small>starts just-tell-me in every session</small></li>
-          <li><code>evals/</code><small>test cases for each skill</small></li>
-          <li><code>.claude-plugin/</code><small>name, version and marketplace</small></li>
-        </ul>
-      </div>
-    </section>
-    <section class="panel">
-      <header><span class="badge">B</span><div><h2>The description decides when a skill starts.</h2><span class="ref">skills/brooooo/SKILL.md</span></div></header>
-      <div class="body">
-        <div class="anno">
-          <span class="seg n"><span class="t">name: brooooo</span><span class="why">the command you type</span></span>
-          <span class="seg n"><span class="t">description: Invoke when the agent goes the wrong way</span><span class="why">the agent matches your words to this</span></span>
-          <span class="seg x"><span class="t">disable-model-invocation: true</span><span class="why">the agent cannot start it</span></span>
-        </div>
-      </div>
-    </section>
-    <section class="panel w6">
-      <header><span class="badge">C</span><div><h2>Three skills can start on their own.</h2><span class="ref">trigger per skill</span></div></header>
-      <div class="body"><table>
-        <tr><th>Skill</th><th>Agent starts it</th></tr>
-        <tr><td>just-tell-me</td><td class="ok">Every session</td></tr>
-        <tr><td>lets-build-pyramids</td><td class="ok">Before a feature</td></tr>
-        <tr><td>but-why</td><td class="ok">When fixes fail</td></tr>
-        <tr><td>brooooo</td><td class="bad">Only you</td></tr>
-        <tr><td>blueprint</td><td class="bad">Only you</td></tr>
-      </table></div>
-    </section>
-    <section class="panel w6">
-      <header><span class="badge">D</span><div><h2>The plugin raises every score.</h2><span class="ref">evals, 3 runs per case</span></div></header>
-      <div class="body">
-        <div class="limit"><div class="lab">Design review, audit log<b>0.90 · was 0.57</b></div><div class="track"><i style="width:90%"></i></div></div>
-        <div class="limit"><div class="lab">Estimate in agent time<b>1.00 · was 0.60</b></div><div class="track"><i style="width:100%"></i></div></div>
-        <div class="limit"><div class="lab">brooooo, wrong direction<b>0.90</b></div><div class="track"><i style="width:90%"></i></div></div>
-      </div>
-    </section>
-    <section class="panel">
-      <header><span class="badge">E</span><div><h2>Three steps take an edit to your session.</h2><span class="ref">dashed is a step you run</span></div></header>
-      <div class="body">
-        <div class="flow"><span class="box">Edit SKILL.md</span><span class="arrow">→</span><span class="box new">Bump version</span><span class="arrow">→</span><span class="box new">git push</span><span class="arrow">→</span><span class="box new">plugin update</span><span class="arrow">→</span><span class="box">Restart</span></div>
-        <p class="caption">The installed copy is a cache. Without the three steps, a session keeps the old skill.</p>
-      </div>
-    </section>
-  </div>
+<div class="titleblock"><h1>How onmywatch Works</h1><span class="meta">Claude Code plugin · v0.20 · github.com/dip497/onmywatch</span></div>
+<div class="lead"><p>onmywatch is one plugin. Skills change how the agent answers, designs and recovers.</p><ul><li>just-tell-me runs in every session. You start the others, or the agent does.</li><li>Each skill has evals that run with and without the plugin.</li><li>A change reaches your session only after a version bump and an update.</li></ul></div>
+<div class="grid">
+<section class="panel"><header><span class="badge">A</span><div><h2>Four folders hold the whole plugin.</h2><span class="ref">repository root</span></div></header><div class="body tree"><div class="root"><b>onmywatch</b><small>one plugin, one marketplace</small></div><ul><li><code>skills/</code><small>one folder per skill, one SKILL.md in each</small></li><li><code>hooks/</code><small>starts just-tell-me in every session</small></li><li><code>evals/</code><small>test cases for each skill</small></li><li><code>.claude-plugin/</code><small>name, version and marketplace</small></li></ul></div></section><section class="panel"><header><span class="badge">B</span><div><h2>The description decides when a skill starts.</h2><span class="ref">skills/brooooo/SKILL.md</span></div></header><div class="body"><div class="anno"><span class="seg n"><span class="t">name: brooooo</span><span class="why">the command you type</span></span><span class="seg n"><span class="t">description: Invoke when the agent goes the wrong way</span><span class="why">the agent matches your words to this</span></span><span class="seg x"><span class="t">disable-model-invocation: true</span><span class="why">the agent cannot start it</span></span></div></div></section><section class="panel w6"><header><span class="badge">C</span><div><h2>Three skills can start on their own.</h2><span class="ref">trigger per skill</span></div></header><div class="body"><div class="scroll"><table><tr><th>Skill</th><th>Agent starts it</th></tr><tr><td>just-tell-me</td><td class="ok">Every session</td></tr><tr><td>lets-build-pyramids</td><td class="ok">Before a feature</td></tr><tr><td>but-why</td><td class="ok">When fixes fail</td></tr><tr><td>brooooo</td><td class="bad">Only you</td></tr><tr><td>blueprint</td><td class="bad">Only you</td></tr></table></div></div></section><section class="panel w6"><header><span class="badge">D</span><div><h2>The plugin raises every score.</h2><span class="ref">evals, 3 runs per case</span></div></header><div class="body"><div class="limit"><div class="lab">Design review, audit log<b>0.90 · was 0.57</b></div><div class="track"><i style="width:90%"></i></div></div><div class="limit"><div class="lab">Estimate in agent time<b>1.00 · was 0.60</b></div><div class="track"><i style="width:100%"></i></div></div><div class="limit"><div class="lab">brooooo, wrong direction<b>0.90</b></div><div class="track"><i style="width:90%"></i></div></div></div></section><section class="panel"><header><span class="badge">E</span><div><h2>A push reaches your session through the plugin cache.</h2><span class="ref">dashed is a step you run</span></div></header><div class="body"><figure class="diagram"><div class="scroll"><svg viewBox="0 0 847 238" role="img" aria-label="A push reaches your session through the plugin cache." style="min-width:680px"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs><path class="edge new" d="M198.0,52.0 H342.0" marker-end="url(#arrow)"/><path class="edge new" d="M490.0,52.0 H634.0" marker-end="url(#arrow)"/><path class="edge" d="M730.5,84 V154" marker-end="url(#arrow)"/><rect class="mask" x="232.0" y="30.0" width="76" height="19"/><text class="elbl new" x="238.0" y="44.0">git push</text><rect class="mask" x="504.0" y="30.0" width="116" height="19"/><text class="elbl new" x="510.0" y="44.0">plugin update</text><rect class="mask" x="736.5" y="110.0" width="108" height="19"/><text class="elbl" x="742.5" y="124.0">loads skills</text><rect class="node " x="20" y="20" width="178.0" height="64"/><text class="lbl" x="109.0" y="49.0" text-anchor="middle">Local repo</text><text class="sub" x="109.0" y="68.0" text-anchor="middle">~/projects/onmywatch</text><rect class="node " x="342.0" y="20" width="148.0" height="64"/><text class="lbl" x="416.0" y="49.0" text-anchor="middle">GitHub</text><text class="sub" x="416.0" y="68.0" text-anchor="middle">dip497/onmywatch</text><rect class="node store" x="634.0" y="20" width="193.0" height="64"/><text class="lbl" x="730.5" y="49.0" text-anchor="middle">Plugin cache</text><text class="sub" x="730.5" y="68.0" text-anchor="middle">one folder per version</text><rect class="node " x="634.0" y="154" width="193.0" height="64"/><text class="lbl" x="730.5" y="183.0" text-anchor="middle">Session</text><text class="sub" x="730.5" y="202.0" text-anchor="middle">after restart</text></svg></div></figure><p class="caption">Without a version bump, <code>plugin update</code> keeps the old copy.</p></div></section>
+</div>
 </div>
 </body>
 </html>

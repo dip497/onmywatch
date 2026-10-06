@@ -36,7 +36,7 @@ claude plugin update onmywatch@onmywatch
 | `/lets-build-pyramids` | Architecture review before a feature is built: researches how others solved it, looks at it from six views, compares three real designs at today's size, 10x and 100x, and runs a pre-mortem. | You or the agent |
 | `/but-why` | First-principles redesign: separates facts from inherited choices and habits, then rebuilds the design from the facts. | You or the agent |
 | `/brooooo` | Press it when a reply did not land or the agent got something wrong. It restates plainly, or owns the mistake and fixes it. | You |
-| `/blueprint` | Shows the topic instead of explaining it: a text picture or Mermaid in the chat, or an HTML engineering sheet (`/blueprint sheet`, `/blueprint share`). | You |
+| `/blueprint` | Shows the topic instead of explaining it: a text picture or Mermaid in the chat, or an HTML engineering sheet built from a small JSON spec and premade assets (`/blueprint sheet`, `/blueprint share`). | You |
 | `/no-added-comments` | Keeps diffs free of comments the agent added. | You or the agent |
 
 "You or the agent" means you can type it, and the agent also starts it on its own when the task matches.
