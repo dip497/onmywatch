@@ -1,4 +1,4 @@
-"""Check a blueprint sheet before it is handed over.
+"""Check a show-me sheet before it is handed over.
 
 Usage: python3 check.py sheet.html
 Prints ERROR and WARN lines and exits 1 if there is any ERROR.

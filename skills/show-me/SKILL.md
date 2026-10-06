@@ -1,10 +1,10 @@
 ---
-name: blueprint
-description: 'Make the current topic visible instead of explaining it in prose. "/blueprint" shows you: the smallest picture in the chat (pseudocode, call tree, file tree, diff, Mermaid). "/blueprint sheet" or "/blueprint share" makes one HTML engineering sheet from a small JSON spec and premade assets: lettered panels, mechanism diagrams, annotated examples, tables, limits and flows, to open yourself or publish for others.'
+name: show-me
+description: 'Make the current topic visible instead of explaining it in prose. "/show-me" shows you: the smallest picture in the chat (pseudocode, call tree, file tree, diff, Mermaid). "/show-me sheet" or "/show-me share" makes one HTML engineering sheet from a small JSON spec and premade assets: lettered panels, mechanism diagrams, annotated examples, tables, limits and flows, to open yourself or publish for others.'
 disable-model-invocation: true
 ---
 
-# blueprint
+# show-me
 
 Show the idea, do not describe it. The reader understands a picture faster than a paragraph.
 
@@ -80,8 +80,8 @@ You write only the content, as a small JSON file. `scripts/build.py` adds the pr
 
 Then hand it over:
 
-- **For you** (`/blueprint sheet`): save it in the scratch folder, or where the project keeps docs, and open it (`xdg-open` or `open`).
-- **For others** (`/blueprint share`): publish it as a private Artifact if the tool exists and give the link. Before you publish, remove anything private: hostnames, IPs, customer names, keys.
+- **For you** (`/show-me sheet`): save it in the scratch folder, or where the project keeps docs, and open it (`xdg-open` or `open`).
+- **For others** (`/show-me share`): publish it as a private Artifact if the tool exists and give the link. Before you publish, remove anything private: hostnames, IPs, customer names, keys.
 
 ## Writing
 

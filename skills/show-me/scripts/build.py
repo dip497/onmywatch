@@ -1,4 +1,4 @@
-"""Build a blueprint sheet from a small JSON spec, then check it.
+"""Build a show-me sheet from a small JSON spec, then check it.
 
 Usage: python3 build.py sheet.json [out.html]
 Writes out.html (default: next to the JSON) with the CSS inlined, runs check.py, exits 1 on a check error.
