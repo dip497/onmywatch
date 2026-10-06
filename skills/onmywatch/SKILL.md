@@ -17,3 +17,5 @@ Read the request, pick the skills below that apply, and follow them.
 | `/but-why` | A requirement does not fit the design, fixes keep failing on one assumption, or you are asked to rethink. |
 | `/lets-build-pyramids` | Before building or approving a feature: check its design and what breaks at 10x and 100x. |
 | `/show-me` | A topic is hard to follow in prose: show it as a text picture, a diagram, or an HTML sheet to open or share. |
+| `/talk-is-cheap` | On in every session: data structures first, cost stated, root-cause fixes, architecture note when the structure is wrong. |
+| `/trust-me-bro` | You write, change or review tests, or a fix needs proof. |

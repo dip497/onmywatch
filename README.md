@@ -33,6 +33,8 @@ claude plugin update onmywatch@onmywatch
 |---|---|---|
 | `/onmywatch` | Entry point. Reads the task and picks the skills below that apply. | You or the agent |
 | `/just-tell-me` | Replies lead with the answer, number the steps, say where the work stands and end with one next step. No filler. | On in every session |
+| `/talk-is-cheap` | Senior-engineer lens on every code task: data structures and their invariants first, cost stated, simplest thing that holds, root-cause fixes. Adds an architecture note with a refactor shape when the structure around your change is wrong. Checks 13 quality areas and reports the top 3. | On in every session |
+| `/trust-me-bro` | A test must guard behaviour against a real bug, not mirror the code. Gates every new test, rejects tests that prove nothing, audits existing ones. | You or the agent |
 | `/lets-build-pyramids` | Architecture review before a feature is built: researches how others solved it, looks at it from six views, compares three real designs at today's size, 10x and 100x, and runs a pre-mortem. | You or the agent |
 | `/but-why` | First-principles redesign: separates facts from inherited choices and habits, then rebuilds the design from the facts. | You or the agent |
 | `/brooooo` | Press it when a reply did not land or the agent got something wrong. It restates plainly, or owns the mistake and fixes it. | You |
@@ -41,9 +43,11 @@ claude plugin update onmywatch@onmywatch
 
 "You or the agent" means you can type it, and the agent also starts it on its own when the task matches.
 
-### Turning just-tell-me off
+### Turning always-on skills off
 
-- For one session: say "stop just-tell-me".
+`just-tell-me` and `talk-is-cheap` start in every session.
+
+- For one session: say "stop just-tell-me" or "stop talk-is-cheap".
 - For good: fork the repo and delete `hooks/`.
 
 ### show-me sheet
@@ -63,6 +67,7 @@ Run one skill's cases:
 ```
 claude plugin eval . --tag lets-build-pyramids --runs 3 --allow-tools WebSearch WebFetch
 claude plugin eval . --tag just-tell-me --runs 3 --judge-model sonnet
+claude plugin eval . --tag talk-is-cheap trust-me-bro --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 ```
 
@@ -78,6 +83,12 @@ Latest scores, 3 runs per case:
 | `just-tell-me` | Estimate for a feature, sized in agent time | 1.00 | 0.60 |
 | `just-tell-me` | Explain a bug and its fix (about 30% fewer words) | 1.00 | 1.00 |
 | `just-tell-me` | Unsafe command question, keeps the "no" | 1.00 | 1.00 |
+| `talk-is-cheap` | Hotfix next to a duplicated rule: small fix plus architecture note | 1.00 | 0.60 |
+| `talk-is-cheap` | Review an unbounded cache: top 3 risks only | 1.00 | 0.75 |
+| `talk-is-cheap` | Over-built plan for 200 users: clear verdict, simpler design | 0.89 | 0.67 |
+| `talk-is-cheap` | Typo question: no lecture | 1.00 | 0.67 |
+| `talk-is-cheap` | Session lookup, duplicate finder (both arms pass) | 1.00 | 1.00 |
+| `trust-me-bro` | Mirror test, never-failed regression, keep a contract test, write tests | 0.90–1.00 | 0.83–1.00 |
 
 `brooooo` has no "without" score: it is a command you type, so it does not exist without the plugin.
 
@@ -93,6 +104,8 @@ Latest scores, 3 runs per case:
 - `just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT), with lessons from [caveman](https://github.com/JuliusBrussee/caveman) by Julius Brussee and [caveman-micro](https://github.com/kuba-guzik/caveman-micro).
 - `brooooo` adapts `bro`, and `but-why` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise`, from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
 - `show-me` draws on [show-me](https://github.com/humanlayer/skills/tree/main/plugins/show-me) by HumanLayer (MIT), the [html-plan](https://github.com/anthropics/claude-plugins-community/tree/main/html-plan) plugin by Thariq Shihipar (MIT), [archify](https://github.com/tt-a1i/archify) by tt-a1i (MIT), Claude's artifact design and diagramming guidance, and Andrej Karpathy's note on asking for STE text, diagrams and HTML instead of prose.
+- `talk-is-cheap` adapts the ladder and root-cause rule from [ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT), pstack's `model-the-domain` and `foundational-thinking`, and the ISO/IEC 25010 quality model.
+- `trust-me-bro` adapts [test-audit](https://github.com/openclaw/openclaw/blob/main/.agents/skills/test-audit/SKILL.md) from openclaw (MIT) and pstack's `principle-test-behavior-not-implementation`.
 
 ## License
 

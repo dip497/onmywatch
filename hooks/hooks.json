@@ -4,7 +4,7 @@
       {
         "matcher": "startup|resume|clear|compact",
         "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/just-tell-me.sh\"", "timeout": 10 }
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/always-on.sh\"", "timeout": 10 }
         ]
       }
     ]

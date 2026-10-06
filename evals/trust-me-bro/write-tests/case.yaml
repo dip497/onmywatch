@@ -1,0 +1,41 @@
+schema_version: "1.1"
+name: trust-me-bro-write-tests
+tags: [trust-me-bro]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "Add tests for apply_discount in tests/test_pricing.py."
+  max_turns: 8
+  allowed_tools: [Skill, Read, Edit, Write, Glob, Grep]
+graders:
+  - name: literal-expected
+    type: llm
+    weight: 2
+    focus: {source: file, path: tests/test_pricing.py}
+    criteria: >-
+      The tests assert hand-computed literal expected values written in the test file (for example 180 or 100.0),
+      not values computed by calling apply_discount or by re-implementing its formula, and they cover the 50% cap and a negative percent.
+  - name: not-self-referential
+    type: regex
+    weight: 2
+    target: {source: file, path: tests/test_pricing.py}
+    pattern: "==\\s*apply_discount\\("
+    match: not_contains
+  - name: cap-boundary
+    type: regex
+    weight: 1
+    target: {source: file, path: tests/test_pricing.py}
+    pattern: "\\b50\\b"
+    match: contains
+  - name: negative-case
+    type: regex
+    weight: 1
+    target: {source: file, path: tests/test_pricing.py}
+    pattern: "-\\d"
+    match: contains
+  - name: no-weak-asserts
+    type: regex
+    weight: 1
+    target: {source: file, path: tests/test_pricing.py}
+    pattern: "is not None|assert result$|isinstance\\("
+    match: not_contains
