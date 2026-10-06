@@ -15,3 +15,4 @@ Read the request, pick the skills below that apply, and follow them.
 | `/just-tell-me` | You want every reply short and actionable for the rest of the session. |
 | `/brooooo` | Your last reply did not land, or you did something wrong: restate it plainly, or own it and fix it. |
 | `/but-why` | A requirement does not fit the design, fixes keep failing on one assumption, or you are asked to rethink. |
+| `/lets-build-pyramids` | Before building or approving a feature: check its design and what breaks at 10x and 100x. |

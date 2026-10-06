@@ -20,6 +20,7 @@ Start a task with `/onmywatch`. It routes to the other skills.
 | `/onmywatch` | Start of any non-trivial task. |
 | `/just-tell-me` | On in every session. Replies lead with the action, number steps, say where we are, end with one next step. |
 | `/but-why` | Separates what must be true from what is inherited, then rebuilds the design from the facts. |
+| `/lets-build-pyramids` | Design and scalability check before a feature is built. |
 | `/brooooo` | Restates a reply that did not land, or owns a mistake and fixes it. |
 | `/no-added-comments` | You write or change code. |
 
