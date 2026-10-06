@@ -41,7 +41,7 @@ When:     now | next change here | never, and why
 - Do not refactor unasked. "Do it" makes it the next task.
 - Mark each claim measured or suspected. For performance, give the command that measures it.
 - A "later" note goes into `docs/architecture-debt.md` in the repo, or offer a ticket. Do not repeat a note already given this session.
-- A full redesign goes to `/trust-issues`; a new feature's design to `/lets-build-pyramids`.
+- Invoke `/trust-issues` before answering when asked how an existing design should change for a new requirement, or when fixes keep failing. Invoke `/lets-build-pyramids` before designing a new feature. Do not answer those from this skill alone.
 
 ## Manner
 

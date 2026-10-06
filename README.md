@@ -90,10 +90,10 @@ Latest scores, 3 runs per case:
 | `just-tell-me` | Partial failure: no invented cause, gives the check | 1.00 | 1.00 |
 | `just-tell-me` | Third "still broken": stops and asks for evidence | 0.67 | n/a |
 | `just-tell-me` | "Thanks": no invented next step | 1.00 | n/a |
-| `trust-issues` | Fourth fix after three failed: names the shared premise first | 0.73 | 0.20 |
-| `trust-issues` | Users in two orgs: membership table, not a second column | 0.58 | 0.17 |
+| `trust-issues` | Fourth fix after three failed: names the shared premise first | 0.80 | 0.73 |
+| `trust-issues` | Users in two orgs: membership table, not a second column | 1.00 | 0.25 |
 | `trust-issues` | Special cases: keeps the rate limit and cites why it exists | 1.00 | 0.44 |
-| `trust-issues` | Small change that fits: no ceremony | 1.00 | 1.00 |
+| `trust-issues` | Small change that fits: no ceremony | 0.67 | 1.00 |
 | `talk-is-cheap` | Hotfix next to a duplicated rule: small fix plus architecture note | 1.00 | 0.60 |
 | `talk-is-cheap` | Review an unbounded cache: top 3 risks only | 1.00 | 0.75 |
 | `talk-is-cheap` | Over-built plan for 200 users: clear verdict, simpler design | 0.89 | 0.67 |
