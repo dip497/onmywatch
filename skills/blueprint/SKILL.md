@@ -38,25 +38,35 @@ Keep only the calls, files, props and states that answer the current question. P
 
 An engineering sheet: a title block, a short answer at the top, then lettered panels A, B, C in reading order. Each panel makes one point and proves it with one exhibit.
 
-1. **Read first.** Get the real names, numbers, paths and examples. Never invent data for a sheet; if a value is a guess, label it as one.
+1. **Read first.** Get the real names, numbers, paths and examples. Never invent data for a sheet; if a value is a guess, label it as one. A claim about code carries its `file:line`; an unknown is written next to the claim it affects.
 2. **Write the lead**: the answer in one sentence, then two or three supporting points. A reader who stops here must still have the answer.
-3. **List the panels**, at most 6. Each panel title is its point as a sentence that can be true or false: "Three skills can start on their own." Not a label like "Triggers". Read the lead and the titles in order; together they must tell the whole story.
-4. **Pick one exhibit per panel** from the template's parts:
+3. **Write the panel titles before anything else**, at most 6. Each title is the panel's point as a sentence that can be true or false, at most 12 words: "Three skills can start on their own." Not a label like "Triggers". Read the lead and the titles aloud in order; they must tell the whole story. For a plan or a change, end with a panel that says what does not change.
+4. **Pick one exhibit per panel.** A second exhibit means a second panel.
 
    | Part | Shows |
    |---|---|
+   | `figure.diagram` | A mechanism: which parts talk, where data flows, the hop being added |
    | `.tree` | Structure, ownership, a hierarchy (at most 6 children) |
    | `.anno` | One real line (code, a sentence, a command) with each part bracketed and named |
    | `table` with `.ok` / `.bad` | A comparison or allowed against not allowed (at most 7 rows, 4 columns) |
-   | `.limit` | A value against its maximum |
-   | `.flow` | Steps or data flow; dashed `.new` boxes are new or are steps the reader runs |
+   | `.limit` | Values against a maximum |
+   | `.flow` | A short ordered list of steps; dashed `.new` boxes are new or are steps the reader runs |
    | `.timeline` | Order in time, versions, phases |
-   | Inline SVG | Anything the parts above cannot draw |
 
-5. **Copy `assets/sheet.html`.** Keep its tokens and CSS. Replace the example lead and panels. Panels are full width; use `w6` only for two short panels that belong side by side. Delete parts you do not use.
-6. **Keep it readable.** Body text 17px; no text under 14px; no grey italic; text contrast 4.5:1 or more in both themes. Do not add CSS that breaks these.
-7. **Words on the sheet** follow the writing rules below. A caption is one sentence. A note under an `.anno` bracket is at most 6 words.
-8. **Look at it before you hand it over.** Take screenshots at desktop width, at phone width and in dark mode, for example `chromium --headless --screenshot=out.png --window-size=1400,1500 file:///full/path/sheet.html` (add `data-theme="dark"` on `<html>` for dark). Read each one. Fix any clipped text, overlap, horizontal scroll or text you have to squint at.
+5. **Draw the mechanism, not its name.** In a `figure.diagram`:
+   - Show only the parts the point depends on: the boundary crossed, the hop added, the data that moves.
+   - To compare options, draw the difference: the edge each option adds or removes.
+   - Label every arrow with what it does: `writes`, `on miss: query`, `polls every 30 s`.
+   - Main path left to right in reading order; stores and branches directly above or below their owner.
+   - No line crosses another line or passes through a box. Fix a tangle by moving boxes, never by shrinking or deleting a label.
+   - Size boxes from their text: about 9 px per character at 15 px, plus 24 px.
+   - At most 3 columns of boxes, or draw it top to bottom, so it stays readable on a phone.
+   - The caption states the claim; `aria-label` on the `<svg>` says the same.
+6. **Colour means something or it is not used.** Ink for normal, `--note` blue for new or proposed, `--ok` green and `--bad` red for status. Dashed always means new. No decorative colour, shadows or emoji.
+7. **Copy `assets/sheet.html`.** Keep its tokens and CSS. Replace the example lead and panels; delete parts you do not use. Panels are full width; use `w6` only for two short panels that belong side by side.
+8. **Words on the sheet** follow the writing rules below. A caption is one sentence. A note under an `.anno` bracket is at most 6 words. The whole sheet is at most 450 words.
+9. **Run the check**: `python3 <this skill>/scripts/check.py sheet.html`. It fails on contrast under 4.5:1 in either theme, text under 14 px (13 px inside diagrams), a missing lead or more than 6 panels. It warns on label-style titles, two exhibits in one panel, unlabelled arrows, long sentences and words to replace. Fix every error and every warning you agree with.
+10. **Look at it.** Take screenshots at desktop width, at phone width and in dark mode, for example `chromium --headless --screenshot=out.png --window-size=1400,1500 file:///full/path/sheet.html`; for dark, add `data-theme="dark"` to `<html>` in a copy. Read each screenshot. Fix clipped text, overlaps, crossed lines, horizontal page scroll and anything you have to squint at. At most two rounds of fixes. If you could not take screenshots, say so; never report that it looks right unseen.
 
 Then hand it over:
 

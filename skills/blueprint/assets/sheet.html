@@ -90,6 +90,22 @@ td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
 .timeline div::before{content:"";position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border:2px solid var(--line);border-radius:50%;background:var(--paper)}
 .timeline div b{display:block;font-size:17px;color:var(--ink);font-weight:600}
 
+/* Mechanism diagram: inline SVG. Boxes are opaque so no line shows through; every arrow has a label. */
+figure.diagram{margin:0}
+figure.diagram .scroll{overflow-x:auto}
+figure.diagram svg{display:block;width:100%;max-width:100%;height:auto;min-width:680px;color:var(--ink)}
+figure.diagram .node{fill:var(--paper);stroke:currentColor;stroke-width:1.5}
+figure.diagram .node.new{stroke:var(--note);stroke-dasharray:6 4}
+figure.diagram .node.store{fill:var(--fill)}
+figure.diagram .edge{fill:none;stroke:currentColor;stroke-width:1.5}
+figure.diagram .edge.new{stroke:var(--note);stroke-dasharray:6 4}
+figure.diagram .lbl{font:600 15px var(--sans);fill:currentColor}
+figure.diagram .sub{font:13px var(--sans);fill:var(--muted)}
+figure.diagram .elbl{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .elbl.new{fill:var(--note)}
+figure.diagram .mask{fill:var(--paper)}
+figure.diagram figcaption{font-size:15px;color:var(--muted);margin-top:10px}
+
 @media (max-width:760px){
   .sheet{margin:0;border-width:0 0 1.5px}
   .titleblock,.grid{padding-left:16px;padding-right:16px}
@@ -152,6 +168,30 @@ td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
       <header><span class="badge">E</span><div><h2>One new step sits in the middle.</h2><span class="ref">dashed is new</span></div></header>
       <div class="body">
         <div class="flow"><span class="box">Input</span><span class="arrow">→</span><span class="box new">New step</span><span class="arrow">→</span><span class="box">Output</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <header><span class="badge">F</span><div><h2>A cache miss adds one hop to the database.</h2><span class="ref">request path</span></div></header>
+      <div class="body">
+        <figure class="diagram">
+          <div class="scroll">
+          <svg viewBox="0 0 760 200" role="img" aria-label="A cache miss adds one hop to the database.">
+            <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>
+            <path class="edge" d="M150,60 H300" marker-end="url(#arrow)"/>
+            <rect class="mask" x="186" y="44" width="80" height="18"/><text class="elbl" x="226" y="57" text-anchor="middle">GET /item</text>
+            <path class="edge" d="M460,60 H610" marker-end="url(#arrow)"/>
+            <rect class="mask" x="505" y="44" width="60" height="18"/><text class="elbl" x="535" y="57" text-anchor="middle">lookup</text>
+            <path class="edge new" d="M380,90 V140" marker-end="url(#arrow)"/>
+            <rect class="mask" x="388" y="106" width="110" height="18"/><text class="elbl new" x="392" y="119">on miss: query</text>
+            <rect class="node" x="20" y="30" width="130" height="60"/><text class="lbl" x="85" y="58" text-anchor="middle">Browser</text><text class="sub" x="85" y="76" text-anchor="middle">user</text>
+            <rect class="node" x="300" y="30" width="160" height="60"/><text class="lbl" x="380" y="58" text-anchor="middle">API</text><text class="sub" x="380" y="76" text-anchor="middle">owns the read</text>
+            <rect class="node store" x="610" y="30" width="130" height="60"/><text class="lbl" x="675" y="58" text-anchor="middle">Cache</text><text class="sub" x="675" y="76" text-anchor="middle">TTL 60 s</text>
+            <rect class="node store new" x="300" y="140" width="160" height="50"/><text class="lbl" x="380" y="170" text-anchor="middle">Database</text>
+          </svg>
+          </div>
+          <figcaption>Dashed is new. Only a miss reaches the database.</figcaption>
+        </figure>
       </div>
     </section>
   </div>
