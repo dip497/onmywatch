@@ -57,6 +57,7 @@ Run one skill's cases:
 
 ```
 claude plugin eval . --tag lets-build-pyramids --runs 3 --allow-tools WebSearch WebFetch
+claude plugin eval . --tag just-tell-me --runs 3 --judge-model sonnet
 claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 ```
 
@@ -69,6 +70,9 @@ Latest scores, 3 runs per case:
 | `brooooo` | Agent did the opposite of what was asked | 0.90 | n/a |
 | `brooooo` | Agent claimed a test passed without running it | 0.83 | n/a |
 | `brooooo` | Reply full of jargon | 0.73 | n/a |
+| `just-tell-me` | Estimate for a feature, sized in agent time | 1.00 | 0.60 |
+| `just-tell-me` | Explain a bug and its fix (about 30% fewer words) | 1.00 | 1.00 |
+| `just-tell-me` | Unsafe command question, keeps the "no" | 1.00 | 1.00 |
 
 `brooooo` has no "without" score: it is a command you type, so it does not exist without the plugin.
 
@@ -81,7 +85,7 @@ Latest scores, 3 runs per case:
 
 ## Credits
 
-- `just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT).
+- `just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT), with lessons from [caveman](https://github.com/JuliusBrussee/caveman) by Julius Brussee and [caveman-micro](https://github.com/kuba-guzik/caveman-micro).
 - `brooooo` adapts `bro`, and `but-why` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise`, from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
 
 ## License
