@@ -59,6 +59,8 @@ Before writing code, show the reader:
 | Design | The chosen design, and why the others lost. |
 | Steps | Numbered, each with how it will be checked. |
 
+Once the user agrees, record the decision and each dropped choice as an ADR with `/domain-modeling` (Matt Pocock's skill), so the next person who asks "why is it like this?" finds the answer instead of digging through history.
+
 ## Stop
 
 - Do not write code before the facts and the dropped assumptions are written down.

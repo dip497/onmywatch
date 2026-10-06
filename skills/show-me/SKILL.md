@@ -38,6 +38,17 @@ Keep only the calls, files, props and states that answer the current question. P
 
 An engineering sheet: a title block, a short answer at the top, then lettered panels A, B, C in reading order. Each panel makes one point and proves it with one exhibit.
 
+**Where it lives.** Every sheet gets its own folder, chosen once when the request starts, and reused for every fix of that sheet:
+
+```
+.show-me/<YYYY-MM-DD>-<topic-slug>/
+  sheet.json     what you write
+  sheet.html     what build.py makes
+  shots/         desktop.png, phone.png, dark.png
+```
+
+Put `.show-me/` in the working directory, or where the user names. In a git repo, add `.show-me/` to `.git/info/exclude` (local only, never edit the repo's `.gitignore`) unless the user wants sheets committed. A new request gets a new folder, so earlier sheets stay intact.
+
 You write only the content, as a small JSON file. `scripts/build.py` adds the premade layout, CSS, both themes and the diagram drawing, then runs the checks. Do not write or read HTML or CSS for a sheet.
 
 1. **Read first.** Get the real names, numbers, paths and examples. Never invent data; label a guess as a guess. A claim about code carries its `file:line`.
@@ -74,13 +85,13 @@ You write only the content, as a small JSON file. `scripts/build.py` adds the pr
    - Edges go straight or with one bend. If two edges would cross or pass through a box, move the nodes.
    - `new` is dashed blue: new, proposed, or a step the reader runs. `store` is a filled box for data at rest.
 5. **Colour means something or it is not used.** Normal is ink, new is blue and dashed, `ok:` is green, `bad:` is red. No other colour.
-6. **Build**: `python3 <this skill>/scripts/build.py sheet.json` writes `sheet.html` and checks it. Errors fail on contrast under 4.5:1 in either theme, text under 14 px, no lead, or more than 6 panels. Warnings flag label-style titles, unlabelled arrows, sentences over 25 words, more than 450 words and words to replace. Fix the JSON and build again.
-7. **Look at it.** Take screenshots at desktop width, at phone width and in dark mode, for example `chromium --headless --screenshot=out.png --window-size=1400,1500 file:///full/path/sheet.html`; for dark, add `data-theme="dark"` to `<html>` in a copy. Read each one. Fix clipped text, overlaps, crossed lines and anything hard to read. At most two rounds of fixes. If you could not take screenshots, say so; never report that it looks right unseen.
+6. **Build**: `python3 <this skill>/scripts/build.py .show-me/<folder>/sheet.json` writes `sheet.html` beside it and checks it. Errors fail on contrast under 4.5:1 in either theme, text under 14 px, no lead, or more than 6 panels. Warnings flag label-style titles, unlabelled arrows, sentences over 25 words, more than 450 words and words to replace. Fix the JSON and build again.
+7. **Look at it.** Take screenshots at desktop width, at phone width and in dark mode, into the folder's `shots/`, for example `chromium --headless --screenshot=.show-me/<folder>/shots/desktop.png --window-size=1400,1500 file:///full/path/sheet.html`; for dark, add `data-theme="dark"` to `<html>` in a copy. Read each one. Fix clipped text, overlaps, crossed lines and anything hard to read. At most two rounds of fixes. If you could not take screenshots, say so; never report that it looks right unseen.
 8. **Need a part the builder does not have?** Build first, then add it by hand to the HTML, using the CSS variables (`--ink`, `--note`, `--ok`, `--bad`, `--muted`, `--paper`, `--fill`) so both themes work, and run `scripts/check.py sheet.html`.
 
 Then hand it over:
 
-- **For you** (`/show-me sheet`): save it in the scratch folder, or where the project keeps docs, and open it (`xdg-open` or `open`).
+- **For you** (`/show-me sheet`): give the full path of `sheet.html` and open it (`xdg-open` or `open`).
 - **For others** (`/show-me share`): publish it as a private Artifact if the tool exists and give the link. Before you publish, remove anything private: hostnames, IPs, customer names, keys.
 
 ## Writing

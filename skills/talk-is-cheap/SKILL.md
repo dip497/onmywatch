@@ -12,7 +12,7 @@ On for the whole session until "stop talk-is-cheap". Scale it to the task: a typ
 
 ## Before you write code
 
-1. **Read first.** The task, every caller of what you touch, the project's AGENTS.md or CLAUDE.md and its existing patterns. Work the house way; if you must break it, say so.
+1. **Read first.** The task, every caller of what you touch, the project's AGENTS.md or CLAUDE.md and its existing patterns. Work the house way; if you must break it, say so. If `CONTEXT.md` exists, use its terms and flag code or requests that contradict it.
 2. **Data first.** Name the data structure, its invariants and its single owner before any logic.
 3. **Climb the ladder, stop at the first rung that holds:** does it need to exist? → already in this codebase? → standard library → platform feature → an installed dependency → one line → the minimum code.
 4. **A bug fix is a root-cause fix.** Fix it once, in the shared function every caller goes through, not in the path the ticket names.
