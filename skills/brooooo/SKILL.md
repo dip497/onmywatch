@@ -1,12 +1,12 @@
 ---
-name: bro
-description: Invoke with /bro when the last reply did not land or the agent did something wrong. Restates it in plain words, or owns the mistake and fixes it.
+name: brooooo
+description: Invoke with /brooooo when the last reply did not land or the agent did something wrong. Restates it in plain words, or owns the mistake and fixes it.
 disable-model-invocation: true
 ---
 
-# bro
+# brooooo
 
-The reader just said "bro". Something about your last turn was off. Work out which case it is from what they wrote and what you did.
+The reader just said "brooooo". Something about your last turn was off. Work out which case it is from what they wrote and what you did.
 
 ## It did not land
 

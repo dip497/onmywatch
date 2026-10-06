@@ -19,7 +19,7 @@ Start a task with `/onmywatch`. It routes to the other skills.
 |---|---|
 | `/onmywatch` | Start of any non-trivial task. |
 | `/just-tell-me` | On in every session. Replies lead with the action, number steps, say where we are, end with one next step. |
-| `/bro` | The "arre yaar" button: restates a reply that did not land, or owns a mistake and fixes it. |
+| `/brooooo` | Restates a reply that did not land, or owns a mistake and fixes it. |
 | `/no-added-comments` | You write or change code. |
 
 ## Adding a skill
@@ -30,7 +30,7 @@ Start a task with `/onmywatch`. It routes to the other skills.
 
 ## Credits
 
-`just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT). `bro` adapts `bro` from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
+`just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT). `brooooo` adapts `bro` from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
 
 ## License
 
