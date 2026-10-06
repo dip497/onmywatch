@@ -14,4 +14,4 @@ Read the request, pick the skills below that apply, and follow them.
 | `/no-added-comments` | You write or change code. |
 | `/just-tell-me` | You want every reply short and actionable for the rest of the session. |
 | `/brooooo` | Your last reply did not land, or you did something wrong: restate it plainly, or own it and fix it. |
-| `/first-principles` | A requirement does not fit the design, fixes keep failing on one assumption, or you are asked to rethink. |
+| `/but-why` | A requirement does not fit the design, fixes keep failing on one assumption, or you are asked to rethink. |

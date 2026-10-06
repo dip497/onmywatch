@@ -1,9 +1,9 @@
 ---
-name: first-principles
-description: "Apply when a new requirement does not fit the current design, when two or more fixes built on the same assumption have failed, when a design keeps growing special cases, or when asked to rethink or redesign. Separate what must be true from what is only inherited, then rebuild the design from what must be true."
+name: but-why
+description: "First-principles redesign. Apply when a new requirement does not fit the current design, when two or more fixes built on the same assumption have failed, when a design keeps growing special cases, or when asked to rethink or redesign. Separate what must be true from what is only inherited, then rebuild the design from what must be true."
 ---
 
-# First Principles
+# but-why
 
 Reason from what must be true, not from what already exists.
 

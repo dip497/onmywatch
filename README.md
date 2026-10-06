@@ -19,7 +19,7 @@ Start a task with `/onmywatch`. It routes to the other skills.
 |---|---|
 | `/onmywatch` | Start of any non-trivial task. |
 | `/just-tell-me` | On in every session. Replies lead with the action, number steps, say where we are, end with one next step. |
-| `/first-principles` | Separates what must be true from what is inherited, then rebuilds the design from the facts. |
+| `/but-why` | Separates what must be true from what is inherited, then rebuilds the design from the facts. |
 | `/brooooo` | Restates a reply that did not land, or owns a mistake and fixes it. |
 | `/no-added-comments` | You write or change code. |
 
@@ -31,7 +31,7 @@ Start a task with `/onmywatch`. It routes to the other skills.
 
 ## Credits
 
-`just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT). `brooooo` adapts `bro` from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT). `first-principles` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise` from the same.
+`just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT). `brooooo` adapts `bro` from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT). `but-why` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise` from the same.
 
 ## License
 
