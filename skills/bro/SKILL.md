@@ -1,6 +1,6 @@
 ---
 name: bro
-description: The "arre yaar" button. Invoke with /bro when the last reply did not land or the agent did something wrong. Restates it in plain words, or owns the mistake and fixes it.
+description: Invoke with /bro when the last reply did not land or the agent did something wrong. Restates it in plain words, or owns the mistake and fixes it.
 disable-model-invocation: true
 ---
 
