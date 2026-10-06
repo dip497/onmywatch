@@ -36,25 +36,27 @@ Keep only the calls, files, props and states that answer the current question. P
 
 ## Level 4: the sheet
 
-An engineering drawing sheet: a frame with zone numbers and letters, a title block, and lettered panels A, B, C. Each panel answers one question and holds one exhibit.
+An engineering sheet: a title block, a short answer at the top, then lettered panels A, B, C in reading order. Each panel makes one point and proves it with one exhibit.
 
 1. **Read first.** Get the real names, numbers, paths and examples. Never invent data for a sheet; if a value is a guess, label it as one.
-2. **List the panels**, at most 6. Write each panel's question as its title: "Document structure", "What breaks at 10x". Read the titles in order; together they must tell the whole story.
-3. **Pick one exhibit per panel** from the template's parts:
+2. **Write the lead**: the answer in one sentence, then two or three supporting points. A reader who stops here must still have the answer.
+3. **List the panels**, at most 6. Each panel title is its point as a sentence that can be true or false: "Three skills can start on their own." Not a label like "Triggers". Read the lead and the titles in order; together they must tell the whole story.
+4. **Pick one exhibit per panel** from the template's parts:
 
    | Part | Shows |
    |---|---|
-   | `.tree` | Structure, ownership, a hierarchy |
+   | `.tree` | Structure, ownership, a hierarchy (at most 6 children) |
    | `.anno` | One real line (code, a sentence, a command) with each part bracketed and named |
-   | `table` with `.ok` / `.bad` | A comparison, options, allowed against not allowed |
+   | `table` with `.ok` / `.bad` | A comparison or allowed against not allowed (at most 7 rows, 4 columns) |
    | `.limit` | A value against its maximum |
-   | `.flow` | Steps or data flow; dashed `.new` boxes are proposed |
+   | `.flow` | Steps or data flow; dashed `.new` boxes are new or are steps the reader runs |
    | `.timeline` | Order in time, versions, phases |
    | Inline SVG | Anything the parts above cannot draw |
 
-4. **Copy `assets/sheet.html`**, keep its tokens and CSS, and replace the example panels. Size panels with `w6`, `w8`, `w12` so each row adds up to 12. Delete parts you do not use.
-5. **Words on the sheet** follow the writing rules below. A caption is one sentence: what to notice. A note under an `.anno` bracket is a few words.
-6. **Check it.** Open it in a browser if you can, at desktop and phone width. Nothing clipped, no horizontal scroll, labels do not overlap.
+5. **Copy `assets/sheet.html`.** Keep its tokens and CSS. Replace the example lead and panels. Panels are full width; use `w6` only for two short panels that belong side by side. Delete parts you do not use.
+6. **Keep it readable.** Body text 17px; no text under 14px; no grey italic; text contrast 4.5:1 or more in both themes. Do not add CSS that breaks these.
+7. **Words on the sheet** follow the writing rules below. A caption is one sentence. A note under an `.anno` bracket is at most 6 words.
+8. **Look at it before you hand it over.** Take screenshots at desktop width, at phone width and in dark mode, for example `chromium --headless --screenshot=out.png --window-size=1400,1500 file:///full/path/sheet.html` (add `data-theme="dark"` on `<html>` for dark). Read each one. Fix any clipped text, overlap, horizontal scroll or text you have to squint at.
 
 Then hand it over:
 

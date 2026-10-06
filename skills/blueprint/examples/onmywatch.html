@@ -5,162 +5,160 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How onmywatch Works</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Readability floor: body 17px, nothing under 14px, text contrast 4.5:1 or more in both themes. */
 :root{
-  --paper:#ffffff; --ink:#1b1f24; --muted:#5b6470; --line:#1b1f24; --hair:#d5d9de;
-  --panel-head:#ffffff; --badge:#1b1f24; --badge-ink:#ffffff;
-  --note:#1f5fbf; --note-soft:#e8f0fb; --ok:#1f5fbf; --bad:#c4251c; --fill:#f3f5f7;
-  --sans:"IBM Plex Sans Condensed",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --paper:#ffffff; --ink:#15191e; --muted:#4f5865; --line:#15191e; --hair:#d3d8de;
+  --badge:#15191e; --badge-ink:#ffffff; --fill:#f4f6f8;
+  --note:#1a56b0; --note-soft:#e9f0fb; --ok:#1a6b3a; --bad:#b3261e;
+  --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#111418; --ink:#e6e9ed; --muted:#9aa3ad; --line:#c9ced4; --hair:#2c3238;
-  --panel-head:#111418; --badge:#e6e9ed; --badge-ink:#111418;
-  --note:#7fb0ff; --note-soft:#16243a; --ok:#7fb0ff; --bad:#ff7a6e; --fill:#181c21;
+  --paper:#101317; --ink:#e8ebef; --muted:#a4adb8; --line:#cfd5db; --hair:#2d333a;
+  --badge:#e8ebef; --badge-ink:#101317; --fill:#171b20;
+  --note:#8ab8ff; --note-soft:#172538; --ok:#6fd49a; --bad:#ff8a80;
 }}
 :root[data-theme="dark"]{
-  --paper:#111418; --ink:#e6e9ed; --muted:#9aa3ad; --line:#c9ced4; --hair:#2c3238;
-  --panel-head:#111418; --badge:#e6e9ed; --badge-ink:#111418;
-  --note:#7fb0ff; --note-soft:#16243a; --ok:#7fb0ff; --bad:#ff7a6e; --fill:#181c21;
+  --paper:#101317; --ink:#e8ebef; --muted:#a4adb8; --line:#cfd5db; --hair:#2d333a;
+  --badge:#e8ebef; --badge-ink:#101317; --fill:#171b20;
+  --note:#8ab8ff; --note-soft:#172538; --ok:#6fd49a; --bad:#ff8a80;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 var(--sans)}
-code,.mono{font-family:var(--mono);font-size:.92em}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--sans)}
+code,.mono{font-family:var(--mono);font-size:.9em}
 
-/* The drawing frame: zone numbers on top, zone letters at the sides. */
-.sheet{position:relative;margin:16px;border:1.5px solid var(--line);padding:28px 28px 20px}
-.zones{position:absolute;inset:0;pointer-events:none;font:11px var(--mono);color:var(--muted)}
-.zones .cols{position:absolute;top:0;left:28px;right:28px;height:20px;display:grid;grid-template-columns:repeat(8,1fr);border-bottom:1px solid var(--hair)}
-.zones .cols span{display:grid;place-items:center;border-left:1px solid var(--hair)}
-.zones .rows{position:absolute;top:28px;bottom:20px;left:0;width:20px;display:grid;grid-auto-rows:1fr;border-right:1px solid var(--hair)}
-.zones .rows span{display:grid;place-items:center;border-top:1px solid var(--hair)}
-.titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);padding:6px 0 10px;margin-bottom:18px}
-.titleblock h1{margin:0;font-size:22px;font-weight:600}
-.titleblock .meta{font:12px var(--mono);color:var(--muted)}
+.sheet{max-width:1080px;margin:24px auto;border:1.5px solid var(--line);padding:0 0 28px}
+.titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);padding:20px 28px}
+.titleblock h1{margin:0;font-size:28px;line-height:1.2;font-weight:600}
+.titleblock .meta{font:14px var(--mono);color:var(--muted)}
 
-/* Panels */
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;align-items:start}
-.panel{grid-column:span 4;border:1.5px solid var(--line);background:var(--paper);min-width:0}
-.panel.w6{grid-column:span 6}.panel.w8{grid-column:span 8}.panel.w12{grid-column:span 12}
-.panel>header{display:flex;align-items:stretch;border-bottom:1.5px solid var(--line);background:var(--panel-head)}
-.panel>header .badge{background:var(--badge);color:var(--badge-ink);font-weight:600;min-width:32px;display:grid;place-items:center}
-.panel>header h2{margin:0;padding:8px 12px;font-size:16px;font-weight:600;flex:1}
-.panel>header .ref{padding:10px 12px;font:11px var(--mono);color:var(--muted)}
-.panel .body{padding:14px 16px}
-.caption{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic}
+/* The answer: read this and stop if it is enough. */
+.lead{margin:24px 28px 8px;padding:16px 20px;border-left:4px solid var(--note);background:var(--note-soft)}
+.lead p{margin:0 0 8px;font-size:19px;font-weight:500}
+.lead ul{margin:0;padding-left:20px}
+.lead li{margin:4px 0}
 
-/* Annotated line: underline brackets with notes below. */
-.anno{display:flex;flex-wrap:wrap;align-items:flex-start;row-gap:14px;font:15px/1.3 var(--mono);padding-bottom:4px}
+/* Panels, in reading order. w6 puts two side by side on wide screens only. */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 28px 0;align-items:start}
+.panel{grid-column:span 2;border:1.5px solid var(--line);min-width:0}
+.panel.w6{grid-column:span 1}
+.panel>header{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.panel>header .badge{background:var(--badge);color:var(--badge-ink);font-weight:600;font-size:18px;min-width:44px;display:grid;place-items:center}
+.panel>header div{padding:10px 16px}
+.panel>header h2{margin:0;font-size:19px;line-height:1.35;font-weight:600}
+.panel>header .ref{display:block;font:14px var(--mono);color:var(--muted);margin-top:2px}
+.panel .body{padding:18px 20px}
+.caption{font-size:15px;color:var(--muted);margin:14px 0 0}
+
+/* One real line with each part bracketed and named. */
+.anno{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 6px;font:17px/1.35 var(--mono)}
 .anno .seg{display:inline-flex;flex-direction:column;align-items:center;max-width:100%}
-.anno .seg>.t{overflow-wrap:anywhere}
-.anno .seg>.t{padding:0 1px}
-.anno .seg.n>.t{border:1.5px solid var(--note);border-top:0;padding-bottom:3px}
-.anno .seg.x>.t{color:var(--bad)}
-.anno .seg>.why{font:11px/1.2 var(--sans);color:var(--note);margin-top:4px;white-space:normal;max-width:14ch;text-align:center}
+.anno .seg>.t{overflow-wrap:anywhere;padding:0 2px}
+.anno .seg.n>.t{border:2px solid var(--note);border-top:0;padding-bottom:4px}
+.anno .seg.x>.t{color:var(--bad);border:2px solid var(--bad);border-top:0;padding-bottom:4px}
+.anno .seg>.why{font:14px/1.3 var(--sans);color:var(--note);margin-top:6px;text-align:center;max-width:22ch}
 .anno .seg.x>.why{color:var(--bad)}
 
-/* Tables with status marks */
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th{font:11px var(--mono);color:var(--muted);text-align:left;font-weight:400;padding:6px 8px;border-bottom:1px solid var(--hair)}
-td{padding:7px 8px;border-bottom:1px solid var(--hair);vertical-align:top}
-tr:nth-child(even) td{background:var(--fill)}
-.ok{color:var(--ok)}.ok::before{content:"✓ "}
-.bad{color:var(--bad)}.bad::before{content:"✕ "}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th{font:500 14px var(--sans);color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
+.ok{color:var(--ok);font-weight:500}.ok::before{content:"✓ "}
+.bad{color:var(--bad);font-weight:500}.bad::before{content:"✕ "}
 
-/* Limit bar */
-.limit{margin:6px 0 14px}
-.limit .lab{display:flex;justify-content:space-between;font-size:13px}
-.limit .lab b{font:500 12px var(--mono);color:var(--note)}
-.limit .track{position:relative;height:12px;border:1px solid var(--hair);margin-top:6px;background:var(--fill)}
-.limit .track i{position:absolute;inset:0 auto 0 0;background:var(--note-soft);border-right:2px solid var(--note)}
-.limit .ticks{display:flex;justify-content:space-between;font:10px var(--mono);color:var(--muted);margin-top:3px}
+.limit{margin:4px 0 20px}
+.limit .lab{display:flex;justify-content:space-between;gap:12px;font-size:16px}
+.limit .lab b{font:500 15px var(--mono);color:var(--note);white-space:nowrap}
+.limit .track{height:14px;border:1px solid var(--hair);margin-top:8px;background:var(--fill)}
+.limit .track i{display:block;height:100%;background:var(--note)}
 
-/* Tree */
-.tree{font-size:14px}
-.tree .root{border:1.5px solid var(--line);background:var(--note-soft);text-align:center;padding:8px 12px;margin:0 auto 14px;max-width:240px}
-.tree .root small{display:block;color:var(--muted)}
-.tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px solid var(--line)}
-.tree li{position:relative;padding:3px 0 3px 10px}
-.tree li::before{content:"";position:absolute;left:-18px;top:13px;width:22px;border-top:1px solid var(--line)}
-.tree li small{display:block;color:var(--muted);font-size:12px}
+.tree .root{display:inline-block;border:1.5px solid var(--line);background:var(--note-soft);padding:8px 16px;margin-bottom:12px}
+.tree .root small{display:block;color:var(--muted);font-size:14px}
+.tree ul{list-style:none;margin:0 0 0 14px;padding-left:20px;border-left:1.5px solid var(--line)}
+.tree li{position:relative;padding:6px 0}
+.tree li::before{content:"";position:absolute;left:-20px;top:20px;width:14px;border-top:1.5px solid var(--line)}
+.tree li small{display:block;color:var(--muted);font-size:15px}
 
-/* Timeline */
-.timeline{display:flex;justify-content:space-between;position:relative;padding:28px 6px 0}
-.timeline::before{content:"";position:absolute;left:0;right:0;top:46px;border-top:1.5px solid var(--line)}
-.timeline div{position:relative;text-align:center;font-size:12px;color:var(--muted);flex:1}
-.timeline div b{display:block;font-size:15px;color:var(--ink);font-weight:500;margin-bottom:6px}
-.timeline div::after{content:"";display:block;width:11px;height:11px;border:1.5px solid var(--line);border-radius:50%;background:var(--paper);margin:0 auto 6px}
-
-/* Flow: boxes and arrows in one row */
-.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.flow .box{border:1.5px solid var(--line);padding:6px 10px;font-size:13px}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flow .box{border:1.5px solid var(--line);padding:8px 14px;font-size:16px}
 .flow .box.new{border-style:dashed;border-color:var(--note);color:var(--note)}
-.flow .arrow{font:13px var(--mono);color:var(--muted)}
+.flow .arrow{color:var(--muted);font-size:18px}
 
-@media (max-width:900px){.panel,.panel.w6,.panel.w8{grid-column:span 12}.sheet{margin:16px 0;padding:24px 16px 16px}.zones{display:none}}
+.timeline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:7px;border-top:1.5px solid var(--line)}
+.timeline div{position:relative;text-align:center;color:var(--muted);font-size:15px;padding-top:24px}
+.timeline div::before{content:"";position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border:2px solid var(--line);border-radius:50%;background:var(--paper)}
+.timeline div b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+
+@media (max-width:760px){
+  .sheet{margin:0;border-width:0 0 1.5px}
+  .titleblock,.grid{padding-left:16px;padding-right:16px}
+  .lead{margin-left:16px;margin-right:16px}
+  .grid{grid-template-columns:1fr}.panel.w6{grid-column:span 2}
+}
 </style>
 </head>
 <body>
 <div class="sheet">
-  <div class="zones" aria-hidden="true">
-    <div class="cols"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
-    <div class="rows"><span>A</span><span>B</span><span>C</span></div>
-  </div>
-
-    <div class="titleblock">
+  <div class="titleblock">
     <h1>How onmywatch Works</h1>
-    <span class="meta">Claude Code plugin · v0.16 · github.com/dip497/onmywatch</span>
+    <span class="meta">Claude Code plugin · v0.17 · github.com/dip497/onmywatch</span>
+  </div>
+  <div class="lead">
+    <p>onmywatch is one plugin. Skills change how the agent answers, designs and recovers.</p>
+    <ul>
+      <li>just-tell-me runs in every session. You start the others, or the agent does.</li>
+      <li>Each skill has evals that run with and without the plugin.</li>
+      <li>A change reaches your session only after a version bump and an update.</li>
+    </ul>
   </div>
   <div class="grid">
     <section class="panel">
-      <header><span class="badge">A</span><h2>Plugin structure</h2><span class="ref">repo layout</span></header>
+      <header><span class="badge">A</span><div><h2>Four folders hold the whole plugin.</h2><span class="ref">repository root</span></div></header>
       <div class="body tree">
         <div class="root"><b>onmywatch</b><small>one plugin, one marketplace</small></div>
         <ul>
-          <li><code>skills/</code><small>one folder per skill, one SKILL.md each</small></li>
+          <li><code>skills/</code><small>one folder per skill, one SKILL.md in each</small></li>
           <li><code>hooks/</code><small>starts just-tell-me in every session</small></li>
-          <li><code>evals/</code><small>cases per skill, run with and without</small></li>
-          <li><code>.claude-plugin/</code><small>name, version, marketplace</small></li>
+          <li><code>evals/</code><small>test cases for each skill</small></li>
+          <li><code>.claude-plugin/</code><small>name, version and marketplace</small></li>
         </ul>
       </div>
     </section>
-    <section class="panel w8">
-      <header><span class="badge">B</span><h2>Anatomy of a skill file</h2><span class="ref">skills/brooooo/SKILL.md</span></header>
+    <section class="panel">
+      <header><span class="badge">B</span><div><h2>The description decides when a skill starts.</h2><span class="ref">skills/brooooo/SKILL.md</span></div></header>
       <div class="body">
         <div class="anno">
           <span class="seg n"><span class="t">name: brooooo</span><span class="why">the command you type</span></span>
-          <span class="seg"><span class="t">&nbsp;·&nbsp;</span></span>
-          <span class="seg n"><span class="t">description: Invoke when the agent goes the wrong way…</span><span class="why">what the agent matches to start it</span></span>
-          <span class="seg"><span class="t">&nbsp;·&nbsp;</span></span>
-          <span class="seg x"><span class="t">disable-model-invocation: true</span><span class="why">only you can start it</span></span>
+          <span class="seg n"><span class="t">description: Invoke when the agent goes the wrong way</span><span class="why">the agent matches your words to this</span></span>
+          <span class="seg x"><span class="t">disable-model-invocation: true</span><span class="why">the agent cannot start it</span></span>
         </div>
-        <p class="caption">The description decides when a skill starts. The name only decides what you type.</p>
       </div>
     </section>
     <section class="panel w6">
-      <header><span class="badge">C</span><h2>How each skill starts</h2><span class="ref">trigger</span></header>
+      <header><span class="badge">C</span><div><h2>Three skills can start on their own.</h2><span class="ref">trigger per skill</span></div></header>
       <div class="body"><table>
-        <tr><th>Skill</th><th>You type</th><th>Agent starts it</th></tr>
-        <tr><td>just-tell-me</td><td class="mono">automatic</td><td class="ok">Every session</td></tr>
-        <tr><td>lets-build-pyramids</td><td class="mono">/lets-build-pyramids</td><td class="ok">Before a feature</td></tr>
-        <tr><td>but-why</td><td class="mono">/but-why</td><td class="ok">When fixes fail</td></tr>
-        <tr><td>brooooo</td><td class="mono">/brooooo</td><td class="bad">Never</td></tr>
-        <tr><td>blueprint</td><td class="mono">/blueprint</td><td class="bad">Never</td></tr>
+        <tr><th>Skill</th><th>Agent starts it</th></tr>
+        <tr><td>just-tell-me</td><td class="ok">Every session</td></tr>
+        <tr><td>lets-build-pyramids</td><td class="ok">Before a feature</td></tr>
+        <tr><td>but-why</td><td class="ok">When fixes fail</td></tr>
+        <tr><td>brooooo</td><td class="bad">Only you</td></tr>
+        <tr><td>blueprint</td><td class="bad">Only you</td></tr>
       </table></div>
     </section>
     <section class="panel w6">
-      <header><span class="badge">D</span><h2>Eval scores</h2><span class="ref">3 runs per case</span></header>
+      <header><span class="badge">D</span><div><h2>The plugin raises every score.</h2><span class="ref">evals, 3 runs per case</span></div></header>
       <div class="body">
-        <div class="limit"><div class="lab">lets-build-pyramids · audit log<b>0.90 vs 0.57</b></div><div class="track"><i style="width:90%"></i></div><div class="ticks"><span>0</span><span>0.5</span><span>1</span></div></div>
-        <div class="limit"><div class="lab">just-tell-me · estimate in agent time<b>1.00 vs 0.60</b></div><div class="track"><i style="width:100%"></i></div><div class="ticks"><span>0</span><span>0.5</span><span>1</span></div></div>
-        <div class="limit"><div class="lab">brooooo · wrong direction<b>0.90</b></div><div class="track"><i style="width:90%"></i></div><div class="ticks"><span>0</span><span>0.5</span><span>1</span></div></div>
+        <div class="limit"><div class="lab">Design review, audit log<b>0.90 · was 0.57</b></div><div class="track"><i style="width:90%"></i></div></div>
+        <div class="limit"><div class="lab">Estimate in agent time<b>1.00 · was 0.60</b></div><div class="track"><i style="width:100%"></i></div></div>
+        <div class="limit"><div class="lab">brooooo, wrong direction<b>0.90</b></div><div class="track"><i style="width:90%"></i></div></div>
       </div>
     </section>
-    <section class="panel w12">
-      <header><span class="badge">E</span><h2>From edit to your session</h2><span class="ref">dashed is a step you run</span></header>
+    <section class="panel">
+      <header><span class="badge">E</span><div><h2>Three steps take an edit to your session.</h2><span class="ref">dashed is a step you run</span></div></header>
       <div class="body">
-        <div class="flow"><span class="box">Edit SKILL.md</span><span class="arrow">→</span><span class="box new">Bump version</span><span class="arrow">→</span><span class="box new">git push</span><span class="arrow">→</span><span class="box new">plugin update</span><span class="arrow">→</span><span class="box">Restart Claude Code</span></div>
-        <p class="caption">The installed copy is a cache. Without a version bump and an update, a session keeps the old skill.</p>
+        <div class="flow"><span class="box">Edit SKILL.md</span><span class="arrow">→</span><span class="box new">Bump version</span><span class="arrow">→</span><span class="box new">git push</span><span class="arrow">→</span><span class="box new">plugin update</span><span class="arrow">→</span><span class="box">Restart</span></div>
+        <p class="caption">The installed copy is a cache. Without the three steps, a session keeps the old skill.</p>
       </div>
     </section>
   </div>

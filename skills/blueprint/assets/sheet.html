@@ -5,160 +5,153 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sheet Title</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Readability floor: body 17px, nothing under 14px, text contrast 4.5:1 or more in both themes. */
 :root{
-  --paper:#ffffff; --ink:#1b1f24; --muted:#5b6470; --line:#1b1f24; --hair:#d5d9de;
-  --panel-head:#ffffff; --badge:#1b1f24; --badge-ink:#ffffff;
-  --note:#1f5fbf; --note-soft:#e8f0fb; --ok:#1f5fbf; --bad:#c4251c; --fill:#f3f5f7;
-  --sans:"IBM Plex Sans Condensed",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --paper:#ffffff; --ink:#15191e; --muted:#4f5865; --line:#15191e; --hair:#d3d8de;
+  --badge:#15191e; --badge-ink:#ffffff; --fill:#f4f6f8;
+  --note:#1a56b0; --note-soft:#e9f0fb; --ok:#1a6b3a; --bad:#b3261e;
+  --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#111418; --ink:#e6e9ed; --muted:#9aa3ad; --line:#c9ced4; --hair:#2c3238;
-  --panel-head:#111418; --badge:#e6e9ed; --badge-ink:#111418;
-  --note:#7fb0ff; --note-soft:#16243a; --ok:#7fb0ff; --bad:#ff7a6e; --fill:#181c21;
+  --paper:#101317; --ink:#e8ebef; --muted:#a4adb8; --line:#cfd5db; --hair:#2d333a;
+  --badge:#e8ebef; --badge-ink:#101317; --fill:#171b20;
+  --note:#8ab8ff; --note-soft:#172538; --ok:#6fd49a; --bad:#ff8a80;
 }}
 :root[data-theme="dark"]{
-  --paper:#111418; --ink:#e6e9ed; --muted:#9aa3ad; --line:#c9ced4; --hair:#2c3238;
-  --panel-head:#111418; --badge:#e6e9ed; --badge-ink:#111418;
-  --note:#7fb0ff; --note-soft:#16243a; --ok:#7fb0ff; --bad:#ff7a6e; --fill:#181c21;
+  --paper:#101317; --ink:#e8ebef; --muted:#a4adb8; --line:#cfd5db; --hair:#2d333a;
+  --badge:#e8ebef; --badge-ink:#101317; --fill:#171b20;
+  --note:#8ab8ff; --note-soft:#172538; --ok:#6fd49a; --bad:#ff8a80;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 var(--sans)}
-code,.mono{font-family:var(--mono);font-size:.92em}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--sans)}
+code,.mono{font-family:var(--mono);font-size:.9em}
 
-/* The drawing frame: zone numbers on top, zone letters at the sides. */
-.sheet{position:relative;margin:16px;border:1.5px solid var(--line);padding:28px 28px 20px}
-.zones{position:absolute;inset:0;pointer-events:none;font:11px var(--mono);color:var(--muted)}
-.zones .cols{position:absolute;top:0;left:28px;right:28px;height:20px;display:grid;grid-template-columns:repeat(8,1fr);border-bottom:1px solid var(--hair)}
-.zones .cols span{display:grid;place-items:center;border-left:1px solid var(--hair)}
-.zones .rows{position:absolute;top:28px;bottom:20px;left:0;width:20px;display:grid;grid-auto-rows:1fr;border-right:1px solid var(--hair)}
-.zones .rows span{display:grid;place-items:center;border-top:1px solid var(--hair)}
-.titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);padding:6px 0 10px;margin-bottom:18px}
-.titleblock h1{margin:0;font-size:22px;font-weight:600}
-.titleblock .meta{font:12px var(--mono);color:var(--muted)}
+.sheet{max-width:1080px;margin:24px auto;border:1.5px solid var(--line);padding:0 0 28px}
+.titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap;border-bottom:1.5px solid var(--line);padding:20px 28px}
+.titleblock h1{margin:0;font-size:28px;line-height:1.2;font-weight:600}
+.titleblock .meta{font:14px var(--mono);color:var(--muted)}
 
-/* Panels */
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;align-items:start}
-.panel{grid-column:span 4;border:1.5px solid var(--line);background:var(--paper);min-width:0}
-.panel.w6{grid-column:span 6}.panel.w8{grid-column:span 8}.panel.w12{grid-column:span 12}
-.panel>header{display:flex;align-items:stretch;border-bottom:1.5px solid var(--line);background:var(--panel-head)}
-.panel>header .badge{background:var(--badge);color:var(--badge-ink);font-weight:600;min-width:32px;display:grid;place-items:center}
-.panel>header h2{margin:0;padding:8px 12px;font-size:16px;font-weight:600;flex:1}
-.panel>header .ref{padding:10px 12px;font:11px var(--mono);color:var(--muted)}
-.panel .body{padding:14px 16px}
-.caption{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic}
+/* The answer: read this and stop if it is enough. */
+.lead{margin:24px 28px 8px;padding:16px 20px;border-left:4px solid var(--note);background:var(--note-soft)}
+.lead p{margin:0 0 8px;font-size:19px;font-weight:500}
+.lead ul{margin:0;padding-left:20px}
+.lead li{margin:4px 0}
 
-/* Annotated line: underline brackets with notes below. */
-.anno{display:flex;flex-wrap:wrap;align-items:flex-start;row-gap:14px;font:15px/1.3 var(--mono);padding-bottom:4px}
+/* Panels, in reading order. w6 puts two side by side on wide screens only. */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 28px 0;align-items:start}
+.panel{grid-column:span 2;border:1.5px solid var(--line);min-width:0}
+.panel.w6{grid-column:span 1}
+.panel>header{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.panel>header .badge{background:var(--badge);color:var(--badge-ink);font-weight:600;font-size:18px;min-width:44px;display:grid;place-items:center}
+.panel>header div{padding:10px 16px}
+.panel>header h2{margin:0;font-size:19px;line-height:1.35;font-weight:600}
+.panel>header .ref{display:block;font:14px var(--mono);color:var(--muted);margin-top:2px}
+.panel .body{padding:18px 20px}
+.caption{font-size:15px;color:var(--muted);margin:14px 0 0}
+
+/* One real line with each part bracketed and named. */
+.anno{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 6px;font:17px/1.35 var(--mono)}
 .anno .seg{display:inline-flex;flex-direction:column;align-items:center;max-width:100%}
-.anno .seg>.t{overflow-wrap:anywhere}
-.anno .seg>.t{padding:0 1px}
-.anno .seg.n>.t{border:1.5px solid var(--note);border-top:0;padding-bottom:3px}
-.anno .seg.x>.t{color:var(--bad)}
-.anno .seg>.why{font:11px/1.2 var(--sans);color:var(--note);margin-top:4px;white-space:normal;max-width:14ch;text-align:center}
+.anno .seg>.t{overflow-wrap:anywhere;padding:0 2px}
+.anno .seg.n>.t{border:2px solid var(--note);border-top:0;padding-bottom:4px}
+.anno .seg.x>.t{color:var(--bad);border:2px solid var(--bad);border-top:0;padding-bottom:4px}
+.anno .seg>.why{font:14px/1.3 var(--sans);color:var(--note);margin-top:6px;text-align:center;max-width:22ch}
 .anno .seg.x>.why{color:var(--bad)}
 
-/* Tables with status marks */
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th{font:11px var(--mono);color:var(--muted);text-align:left;font-weight:400;padding:6px 8px;border-bottom:1px solid var(--hair)}
-td{padding:7px 8px;border-bottom:1px solid var(--hair);vertical-align:top}
-tr:nth-child(even) td{background:var(--fill)}
-.ok{color:var(--ok)}.ok::before{content:"✓ "}
-.bad{color:var(--bad)}.bad::before{content:"✕ "}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th{font:500 14px var(--sans);color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
+.ok{color:var(--ok);font-weight:500}.ok::before{content:"✓ "}
+.bad{color:var(--bad);font-weight:500}.bad::before{content:"✕ "}
 
-/* Limit bar */
-.limit{margin:6px 0 14px}
-.limit .lab{display:flex;justify-content:space-between;font-size:13px}
-.limit .lab b{font:500 12px var(--mono);color:var(--note)}
-.limit .track{position:relative;height:12px;border:1px solid var(--hair);margin-top:6px;background:var(--fill)}
-.limit .track i{position:absolute;inset:0 auto 0 0;background:var(--note-soft);border-right:2px solid var(--note)}
-.limit .ticks{display:flex;justify-content:space-between;font:10px var(--mono);color:var(--muted);margin-top:3px}
+.limit{margin:4px 0 20px}
+.limit .lab{display:flex;justify-content:space-between;gap:12px;font-size:16px}
+.limit .lab b{font:500 15px var(--mono);color:var(--note);white-space:nowrap}
+.limit .track{height:14px;border:1px solid var(--hair);margin-top:8px;background:var(--fill)}
+.limit .track i{display:block;height:100%;background:var(--note)}
 
-/* Tree */
-.tree{font-size:14px}
-.tree .root{border:1.5px solid var(--line);background:var(--note-soft);text-align:center;padding:8px 12px;margin:0 auto 14px;max-width:240px}
-.tree .root small{display:block;color:var(--muted)}
-.tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px solid var(--line)}
-.tree li{position:relative;padding:3px 0 3px 10px}
-.tree li::before{content:"";position:absolute;left:-18px;top:13px;width:22px;border-top:1px solid var(--line)}
-.tree li small{display:block;color:var(--muted);font-size:12px}
+.tree .root{display:inline-block;border:1.5px solid var(--line);background:var(--note-soft);padding:8px 16px;margin-bottom:12px}
+.tree .root small{display:block;color:var(--muted);font-size:14px}
+.tree ul{list-style:none;margin:0 0 0 14px;padding-left:20px;border-left:1.5px solid var(--line)}
+.tree li{position:relative;padding:6px 0}
+.tree li::before{content:"";position:absolute;left:-20px;top:20px;width:14px;border-top:1.5px solid var(--line)}
+.tree li small{display:block;color:var(--muted);font-size:15px}
 
-/* Timeline */
-.timeline{display:flex;justify-content:space-between;position:relative;padding:28px 6px 0}
-.timeline::before{content:"";position:absolute;left:0;right:0;top:46px;border-top:1.5px solid var(--line)}
-.timeline div{position:relative;text-align:center;font-size:12px;color:var(--muted);flex:1}
-.timeline div b{display:block;font-size:15px;color:var(--ink);font-weight:500;margin-bottom:6px}
-.timeline div::after{content:"";display:block;width:11px;height:11px;border:1.5px solid var(--line);border-radius:50%;background:var(--paper);margin:0 auto 6px}
-
-/* Flow: boxes and arrows in one row */
-.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.flow .box{border:1.5px solid var(--line);padding:6px 10px;font-size:13px}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flow .box{border:1.5px solid var(--line);padding:8px 14px;font-size:16px}
 .flow .box.new{border-style:dashed;border-color:var(--note);color:var(--note)}
-.flow .arrow{font:13px var(--mono);color:var(--muted)}
+.flow .arrow{color:var(--muted);font-size:18px}
 
-@media (max-width:900px){.panel,.panel.w6,.panel.w8{grid-column:span 12}.sheet{margin:16px 0;padding:24px 16px 16px}.zones{display:none}}
+.timeline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:7px;border-top:1.5px solid var(--line)}
+.timeline div{position:relative;text-align:center;color:var(--muted);font-size:15px;padding-top:24px}
+.timeline div::before{content:"";position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border:2px solid var(--line);border-radius:50%;background:var(--paper)}
+.timeline div b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+
+@media (max-width:760px){
+  .sheet{margin:0;border-width:0 0 1.5px}
+  .titleblock,.grid{padding-left:16px;padding-right:16px}
+  .lead{margin-left:16px;margin-right:16px}
+  .grid{grid-template-columns:1fr}.panel.w6{grid-column:span 2}
+}
 </style>
 </head>
 <body>
 <div class="sheet">
-  <div class="zones" aria-hidden="true">
-    <div class="cols"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
-    <div class="rows"><span>A</span><span>B</span><span>C</span></div>
-  </div>
-
   <div class="titleblock">
     <h1>Sheet Title</h1>
     <span class="meta">subject · source · date</span>
   </div>
 
+  <div class="lead">
+    <p>The answer in one sentence.</p>
+    <ul><li>First supporting point.</li><li>Second supporting point.</li></ul>
+  </div>
+
   <div class="grid">
-    <!-- A: structure as a tree -->
+    <!-- Each h2 is the point of the panel, as a sentence. The ref says where it comes from. -->
     <section class="panel">
-      <header><span class="badge">A</span><h2>Structure</h2><span class="ref">where it lives</span></header>
+      <header><span class="badge">A</span><div><h2>Two parts own the work.</h2><span class="ref">src/</span></div></header>
       <div class="body tree">
         <div class="root"><b>Root</b><small>one-line role</small></div>
-        <ul><li>Child one<small>what it owns</small></li><li>Child two<small>what it owns</small></li></ul>
+        <ul><li><code>child-one/</code><small>what it owns</small></li><li><code>child-two/</code><small>what it owns</small></li></ul>
       </div>
     </section>
 
-    <!-- B: one line, annotated -->
-    <section class="panel w8">
-      <header><span class="badge">B</span><h2>Anatomy</h2><span class="ref">annotated example</span></header>
+    <section class="panel">
+      <header><span class="badge">B</span><div><h2>One part of this line is wrong.</h2><span class="ref">annotated example</span></div></header>
       <div class="body">
         <div class="anno">
-          <span class="seg n"><span class="t">first&nbsp;part</span><span class="why">what to notice</span></span>
-          <span class="seg"><span class="t">&nbsp;plain&nbsp;</span></span>
-          <span class="seg x"><span class="t">wrong&nbsp;part</span><span class="why">why it is wrong</span></span>
+          <span class="seg n"><span class="t">first part</span><span class="why">what to notice</span></span>
+          <span class="seg"><span class="t">plain</span></span>
+          <span class="seg x"><span class="t">wrong part</span><span class="why">why it is wrong</span></span>
         </div>
         <p class="caption">One sentence: what the reader must notice.</p>
       </div>
     </section>
 
-    <!-- C: comparison table -->
     <section class="panel w6">
-      <header><span class="badge">C</span><h2>Options</h2><span class="ref">compared</span></header>
+      <header><span class="badge">C</span><div><h2>Option one holds at 10x.</h2><span class="ref">compared</span></div></header>
       <div class="body"><table>
-        <tr><th>Option</th><th>Example</th><th>Status</th></tr>
-        <tr><td>One</td><td class="mono">value</td><td class="ok">Holds</td></tr>
-        <tr><td>Two</td><td class="mono">value</td><td class="bad">Breaks at 10x</td></tr>
+        <tr><th>Option</th><th>Status</th></tr>
+        <tr><td>One</td><td class="ok">Holds</td></tr>
+        <tr><td>Two</td><td class="bad">Breaks at 10x</td></tr>
       </table></div>
     </section>
 
-    <!-- D: limits -->
     <section class="panel w6">
-      <header><span class="badge">D</span><h2>Limits</h2><span class="ref">maximum values</span></header>
+      <header><span class="badge">D</span><div><h2>Usage is at two thirds of the limit.</h2><span class="ref">measured</span></div></header>
       <div class="body">
-        <div class="limit"><div class="lab">Measured thing<b>max 20</b></div><div class="track"><i style="width:66%"></i></div><div class="ticks"><span>0</span><span>10</span><span>20</span><span>30</span></div></div>
+        <div class="limit"><div class="lab">Measured thing<b>14 of 20</b></div><div class="track"><i style="width:70%"></i></div></div>
       </div>
     </section>
 
-    <!-- E: flow and timeline -->
-    <section class="panel w12">
-      <header><span class="badge">E</span><h2>Flow</h2><span class="ref">dashed is new</span></header>
+    <section class="panel">
+      <header><span class="badge">E</span><div><h2>One new step sits in the middle.</h2><span class="ref">dashed is new</span></div></header>
       <div class="body">
         <div class="flow"><span class="box">Input</span><span class="arrow">→</span><span class="box new">New step</span><span class="arrow">→</span><span class="box">Output</span></div>
-        <div class="timeline"><div><b>Then</b>start</div><div><b>Now</b>today</div><div><b>Next</b>planned</div></div>
       </div>
     </section>
   </div>
