@@ -25,22 +25,26 @@ Do not apply it to a small, local change that the current design already handles
 2. **List the assumptions.** Write down everything the current design takes for granted: data shapes, who owns what, ordering, limits, "this is always called once", "there is one tenant". Read every file and doc the design touches, whole, so the list is complete.
 
 3. **Sort each assumption.** Put each one in exactly one bucket:
-   - **Fact:** true no matter how you build it. Physics, the data that exists, a contract another system owns, a hard limit you measured.
+   - **Fact:** true no matter how you build it. Physics, the data that exists, a hard limit you measured.
+   - **Owned elsewhere:** a contract, API or rule another team or system owns. Treat it as fixed for this design, and name who could change it.
    - **Choice:** someone decided it, and it could be decided again.
    - **Habit:** nobody decided it; it is only how it was done before.
 
    An assumption is a fact only if you can show the evidence: the code, the data, the doc, a measurement. If you cannot, it is a choice.
 
-4. **Attack the premise.** If fixes have failed, write the one assumption they all shared. Test it against real data before you write another fix. If it is false, stop fixing and redesign.
+   **Before you drop a choice or habit, find out why it exists** (Chesterton's fence): `git log -S`, `git blame`, the PR or ticket, a comment. Cite what you find. If the reason still holds, it is a fact. If you find no reason, say so. Dropping a choice is a decision: list the drops for the user to confirm, do not drop them silently.
+
+4. **Attack the premise.** If fixes have failed, write the one assumption they all shared as one sentence. Test it with a check you can rerun (a query, a script, a log count) before you write another fix. If it is false, stop fixing and redesign. If it holds, the premise is not the cause: look elsewhere and keep the check as evidence. Remove the cause instead of compensating for it.
 
 5. **Rebuild from the facts.** Ask: "Knowing only the goal and the facts, what is the simplest design that works?"
    - Start from the data shape and who owns it. Logic follows from that.
    - Put each decision in the lowest layer that owns it.
-   - Sketch two or three designs. Pick one and say in one line why each other lost.
+   - Sketch two or three designs that differ in data shape or ownership. A variant of the same shape is not an alternative. Pick one and say in one line why each other lost.
+   - If the redesign needs scale numbers or research, hand that part to `/lets-build-pyramids`.
 
 6. **Compare with what exists.** Keep every part of the current design that already matches the new one. A first-principles design is not a rewrite by default; often it shows that most of the code is right and one assumption is wrong.
 
-7. **Land it in steps.** Order the change into small steps that can each be verified on their own. Carry it through every reference: types, callers, tests, docs. Remove the old path in the same change, not "later".
+7. **Land it in steps, removal first.** Delete what the new design makes dead before you build on top. Then order the change into small steps that can each be verified on their own. Carry it through every reference: types, callers, tests, docs. Remove the old path in the same change, not "later".
 
 ## Output
 
@@ -49,8 +53,9 @@ Before writing code, show the reader:
 | Section | Content |
 |---|---|
 | Goal | One sentence. |
+| Done when | A check that could prove the redesign failed. |
 | Facts | Each with its evidence. |
-| Dropped | Each choice or habit you are removing, and why. |
+| Dropped | Each choice or habit you are removing, where it came from, and why it no longer holds. For the user to confirm. |
 | Design | The chosen design, and why the others lost. |
 | Steps | Numbered, each with how it will be checked. |
 

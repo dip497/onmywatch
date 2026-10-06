@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: but-why-fence
+tags: [but-why]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "sync/job.py is all special cases. Redesign it from first principles."
+  max_turns: 10
+  allowed_tools: [Skill, Read, Glob, Grep]
+graders:
+  - name: keeps-rate-limit
+    type: llm
+    weight: 2
+    criteria: >-
+      The reply keeps a rate limit for partner_b (as a sleep, a limiter or a per-key throttle) and explains that
+      it exists because Partner B suspended the API key for bursting over 1 request per second, citing docs/incidents.md.
+  - name: asks-before-dropping
+    type: llm
+    weight: 1
+    criteria: >-
+      The reply lists the special cases it would remove or change and asks the user to confirm before dropping
+      them, or gives the reason each one existed, rather than silently deleting them.

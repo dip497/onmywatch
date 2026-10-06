@@ -69,6 +69,7 @@ Run one skill's cases:
 claude plugin eval . --tag lets-build-pyramids --runs 3 --allow-tools WebSearch WebFetch
 claude plugin eval . --tag just-tell-me --runs 3 --judge-model sonnet
 claude plugin eval . --tag talk-is-cheap trust-me-bro --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
+claude plugin eval . --tag but-why --runs 3 --scaffold --judge-model sonnet
 claude plugin eval . --tag next-time-faster --runs 3 --ablation none --judge-model sonnet
 claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 ```
@@ -83,8 +84,16 @@ Latest scores, 3 runs per case:
 | `brooooo` | Agent claimed a test passed without running it | 0.83 | n/a |
 | `brooooo` | Reply full of jargon | 0.73 | n/a |
 | `just-tell-me` | Estimate for a feature, sized in agent time | 1.00 | 0.60 |
-| `just-tell-me` | Explain a bug and its fix (about 30% fewer words) | 1.00 | 1.00 |
+| `just-tell-me` | Explain a bug: answer first, under 200 words | 0.89 | 0.83 |
 | `just-tell-me` | Unsafe command question, keeps the "no" | 1.00 | 1.00 |
+| `just-tell-me` | Vague "make it faster": one short question | 0.67 | 0.33 |
+| `just-tell-me` | Partial failure: no invented cause, gives the check | 1.00 | 1.00 |
+| `just-tell-me` | Third "still broken": stops and asks for evidence | 0.67 | n/a |
+| `just-tell-me` | "Thanks": no invented next step | 1.00 | n/a |
+| `but-why` | Fourth fix after three failed: names the shared premise first | 0.73 | 0.20 |
+| `but-why` | Users in two orgs: membership table, not a second column | 0.58 | 0.17 |
+| `but-why` | Special cases: keeps the rate limit and cites why it exists | 1.00 | 0.44 |
+| `but-why` | Small change that fits: no ceremony | 1.00 | 1.00 |
 | `talk-is-cheap` | Hotfix next to a duplicated rule: small fix plus architecture note | 1.00 | 0.60 |
 | `talk-is-cheap` | Review an unbounded cache: top 3 risks only | 1.00 | 0.75 |
 | `talk-is-cheap` | Over-built plan for 200 users: clear verdict, simpler design | 0.89 | 0.67 |

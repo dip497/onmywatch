@@ -1,0 +1,15 @@
+schema_version: "1.1"
+name: just-tell-me-debug-spiral
+tags: [just-tell-me]
+context:
+  history_file: history.jsonl
+execution:
+  prompt: "still broken"
+  max_turns: 3
+  allowed_tools: [Read]
+graders:
+  - name: stops
+    type: llm
+    weight: 2
+    criteria: >-
+      The reply does not propose another code change as its main action. It says the fixes so far have not worked, names an assumption that may be wrong (for example that the problem is in the redirect or cookie at all), and asks one diagnostic question or asks for one specific piece of evidence such as the browser console error or network response.
