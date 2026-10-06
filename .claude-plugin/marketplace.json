@@ -1,7 +1,16 @@
 {
   "name": "onmywatch",
-  "owner": { "name": "dipendra" },
+  "owner": {
+    "name": "griflet"
+  },
   "plugins": [
-    { "name": "onmywatch", "source": "./", "description": "How dipendra works with coding agents: one entry skill, small principle skills." }
-  ]
+    {
+      "name": "onmywatch",
+      "source": "./",
+      "description": "A stack of skills for coding agents: one entry skill that picks the rest, small skills for how work gets done."
+    }
+  ],
+  "metadata": {
+    "description": "A stack of skills for coding agents: one entry skill that picks the rest, small skills for how work gets done."
+  }
 }

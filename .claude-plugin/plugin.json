@@ -1,6 +1,10 @@
 {
   "name": "onmywatch",
-  "version": "0.6.0",
-  "description": "How dipendra works with coding agents: one entry skill, small principle skills.",
-  "author": { "name": "dipendra" }
+  "version": "0.7.0",
+  "description": "A stack of skills for coding agents: one entry skill that picks the rest, small skills for how work gets done.",
+  "author": {
+    "name": "griflet"
+  },
+  "repository": "https://github.com/dip497/onmywatch",
+  "license": "MIT"
 }
