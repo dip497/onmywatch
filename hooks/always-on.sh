@@ -9,3 +9,7 @@ for name in just-tell-me talk-is-cheap; do
   awk 'NR==1&&/^---/{fm=1;next} fm&&/^---/{fm=0;next} !fm' "$f" | sed "s#\`references/#\`$dir/references/#g"
   echo
 done
+# read-my-mind: once the user has a mind-reader agent, have it review work before it is reported done.
+if [ -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/agents/mind-reader.md" ]; then
+  echo "MIND-READER ACTIVE. Before you report a feature, fix, UI change, design or plan as done, run the mind-reader agent on it and fix what it finds. It asks the questions this user keeps asking."
+fi

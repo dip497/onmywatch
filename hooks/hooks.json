@@ -7,6 +7,13 @@
           { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/always-on.sh\"", "timeout": 10 }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/read-my-mind/scripts/mind.py\" trigger" }
+        ]
+      }
     ]
   }
 }

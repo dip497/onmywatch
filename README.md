@@ -40,6 +40,7 @@ claude plugin update onmywatch@onmywatch
 | `/lets-build-pyramids` | Architecture review before a feature is built: researches how others solved it, looks at it from six views, compares three real designs at today's size, 10x and 100x, and runs a pre-mortem. | You or the agent |
 | `/trust-issues` | First-principles redesign: separates facts from inherited choices and habits, then rebuilds the design from the facts. | You or the agent |
 | `/next-time-faster` | Run at the end of a long session. Finds the setup and steps that cost time and will come back, then proposes the lightest fix that holds: nothing, a doc pointer, a script, a hook, or as a last resort a skill. Builds only after approval and proves what it builds. | You |
+| `/read-my-mind` | Reads your own past sessions in every project, turns each thing you had to point out into a question, and keeps a `mind-reader` agent that asks those questions before work is reported done. Per-project profiles, reads only new sessions on each run, and can update itself after sessions end (`auto on`). Profiles and evidence stay on your machine; the analysis runs through your Claude account like any other prompt. | You |
 | `/brooooo` | Press it when a reply did not land or the agent got something wrong. It restates plainly, or owns the mistake and fixes it. | You |
 | `/walk-me-through` | Explains how something works and why it is that way: finds the ground truth, follows the real thing step by step, and gives each decision with its source and how sure it is. Works for code, processes, incidents or a session's work. Builds a tabbed page with guided tours through `/show-me` when asked. | You or the agent |
 | `/show-me` | Shows the topic instead of explaining it: a text picture or Mermaid in the chat, or an HTML engineering sheet built from a small JSON spec and premade assets (`/show-me sheet`, `/show-me share`). | You |
@@ -53,6 +54,27 @@ claude plugin update onmywatch@onmywatch
 
 - For one session: say "stop just-tell-me" or "stop talk-is-cheap".
 - For good: fork the repo and delete `hooks/`.
+
+### read-my-mind
+
+```
+your sessions ──scan (new lines only)──> your words, per project ──analysts──> signals
+                                                                                 │ merge
+~/.claude/agents/mind-reader.md  <── reads ── ~/.claude/agent-memory/mind-reader/
+   runs before work is "done"                  MEMORY.md (general + index), projects/<repo>.md
+        │ notes what it learns                 evidence/, CHANGELOG.md
+        └──────────────► inbox ──► next run (by hand, or by the SessionEnd hook when auto is on)
+```
+
+1. `/onmywatch:read-my-mind` the first time reads the last 30 days and installs the agent.
+2. Run it again, or turn on `auto on`, to read only what is new. A repeat of a known correction counts as a miss and makes that question sharper.
+3. `status` shows what was read and what is waiting. `since 7d`, `project <key>` and `rebuild` pick what to read.
+
+Once `~/.claude/agents/mind-reader.md` exists, the SessionStart hook adds one line to every session: run the mind-reader before reporting work as done.
+
+The automatic update runs `claude -p` on haiku (the main run and its subagents) with no transcript of its own, a budget cap (`--max-budget-usd`, default 3) and at most once a day, only after 3 or more sessions changed. Change it with `mind.py config`.
+
+To remove it: `python3 <plugin>/skills/read-my-mind/scripts/mind.py config --auto off`, then delete `~/.claude/agents/mind-reader.md`, `~/.claude/agent-memory/mind-reader/` and `~/.claude/read-my-mind/`.
 
 ### show-me sheet
 
@@ -74,6 +96,7 @@ claude plugin eval . --tag just-tell-me --runs 3 --judge-model sonnet
 claude plugin eval . --tag talk-is-cheap trust-me-bro --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 claude plugin eval . --tag trust-issues --runs 3 --scaffold --judge-model sonnet
 claude plugin eval . --tag next-time-faster --runs 3 --ablation none --judge-model sonnet
+claude plugin eval . --tag read-my-mind --runs 3 --scaffold --allow-tools Bash Edit Write Agent --judge-model sonnet
 claude plugin eval . --tag brooooo --runs 3 --scaffold --allow-tools Edit Write --judge-model sonnet
 ```
 
@@ -125,6 +148,7 @@ Latest scores, 3 runs per case:
 - `show-me` draws on [show-me](https://github.com/humanlayer/skills/tree/main/plugins/show-me) by HumanLayer (MIT), the [html-plan](https://github.com/anthropics/claude-plugins-community/tree/main/html-plan) plugin by Thariq Shihipar (MIT), [archify](https://github.com/tt-a1i/archify) by tt-a1i (MIT), Claude's artifact design and diagramming guidance, and Andrej Karpathy's note on asking for STE text, diagrams and HTML instead of prose.
 - `talk-is-cheap` adapts the ladder and root-cause rule from [ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT), pstack's `model-the-domain` and `foundational-thinking`, and the ISO/IEC 25010 quality model.
 - `trust-me-bro` adapts [test-audit](https://github.com/openclaw/openclaw/blob/main/.agents/skills/test-audit/SKILL.md) from openclaw (MIT) and pstack's `principle-test-behavior-not-implementation`.
+- `read-my-mind` draws on Claude Code's `/insights` (session analysis) and subagent `memory`, pstack's `reflect` and Matt Pocock's `retro`.
 - `next-time-faster` draws on pstack's `reflect` (including its reviewer and synthesizer prompts), `automate-me`, `encode-lessons-in-structure` and `build-the-lever`, and Matt Pocock's `retro`.
 
 ## License

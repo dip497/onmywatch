@@ -1,0 +1,34 @@
+schema_version: "1.1"
+name: read-my-mind-incremental
+description: Sessions 1-3 were analysed two days ago and the profile already has the menu question. A new session repeats it. The update reads only the new session and records the repeat as a miss.
+tags: [read-my-mind]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/onmywatch:read-my-mind --claude-dir ./claude"
+  max_turns: 40
+  allowed_tools: [Skill, Bash, Read, Write, Edit, Glob, Grep, Agent]
+graders:
+  - name: old-sessions-not-read-again
+    type: regex
+    weight: 2
+    target: {source: file, path: claude/agent-memory/mind-reader/evidence/github.com-acme-shop.jsonl}
+    pattern: "orders page|reports"
+    match: not_contains
+  - name: new-session-read
+    type: regex
+    weight: 2
+    target: {source: file, path: claude/agent-memory/mind-reader/evidence/github.com-acme-shop.jsonl}
+    pattern: "(?i)invoices"
+    match: contains
+  - name: repeat-counted-as-miss
+    type: llm
+    weight: 3
+    criteria: >-
+      The existing menu item (P1 in claude/agent-memory/mind-reader/projects/github.com-acme-shop.md, or the same item after promotion to claude/agent-memory/mind-reader/MEMORY.md) now has Seen 3 and Missed 1 (or higher), and no second, duplicate menu item was added in either file.
+  - name: changelog
+    type: regex
+    weight: 1
+    target: {source: file, path: claude/agent-memory/mind-reader/CHANGELOG.md}
+    pattern: "(?i)repeat"
+    match: contains

@@ -1,0 +1,46 @@
+schema_version: "1.1"
+name: read-my-mind-first-run
+description: Three sessions in two repos (one through a worktree). The user repeats "every page must be reachable from the menu" in one repo, and "do not ask, fix and verify" in both.
+tags: [read-my-mind]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: "/onmywatch:read-my-mind since 30d --claude-dir ./claude"
+  max_turns: 40
+  allowed_tools: [Skill, Bash, Read, Write, Edit, Glob, Grep, Agent]
+graders:
+  - name: shop-profile-written
+    type: regex
+    weight: 1
+    target: {source: file, path: claude/agent-memory/mind-reader/projects/github.com-acme-shop.md}
+    pattern: "(?i)acme/shop"
+    match: contains
+  - name: general-item-promoted
+    type: regex
+    weight: 2
+    target: {source: file, path: claude/agent-memory/mind-reader/MEMORY.md}
+    pattern: "(?i)(ask|verif|yourself)"
+    match: contains
+  - name: worktree-merged-into-one-project
+    type: regex
+    weight: 1
+    target: {source: file, path: claude/agent-memory/mind-reader/MEMORY.md}
+    pattern: "projects/path"
+    match: not_contains
+  - name: agent-installed-with-memory
+    type: regex
+    weight: 1
+    target: {source: file, path: claude/agents/mind-reader.md}
+    pattern: "memory: user"
+    match: contains
+  - name: run-committed
+    type: regex
+    weight: 1
+    target: {source: file, path: claude/read-my-mind/ledger.json}
+    pattern: "last_run_epoch"
+    match: contains
+  - name: questions-not-tasks
+    type: llm
+    weight: 2
+    criteria: >-
+      Read claude/agent-memory/mind-reader/projects/github.com-acme-shop.md and MEMORY.md. The menu item is present (in the shop profile, or in MEMORY.md when it was promoted) and is written as a general question a reviewer can check on any future page (for example "Can a user reach every new page from the navigation?"), not as the one-off task "add orders to the menu". The "do not ask, fix and verify" expectation appears once, as a general item, not copied into each project file.

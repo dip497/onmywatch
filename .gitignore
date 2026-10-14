@@ -1,3 +1,5 @@
 evals/results/
 evals/**/*-*-*-*-*.jsonl
 evals/**/*-*-*-*-*/
+__pycache__/
+*.pyc

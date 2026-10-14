@@ -20,4 +20,5 @@ Read the request, pick the skills below that apply, and follow them.
 | `/talk-is-cheap` | On in every session: data structures first, cost stated, root-cause fixes, architecture note when the structure is wrong. |
 | `/trust-me-bro` | You write, change or review tests, or a fix needs proof. |
 | `/next-time-faster` | End of a long session: turn repeated setup and steps into the lightest fix that holds. |
+| `/read-my-mind` | The user keeps pointing out the same things, or wants an agent that reviews work the way they would. Only the user can start it: tell them to type `/read-my-mind`. |
 | `/walk-me-through` | Someone wants to understand how a system, feature, process or piece of work operates and why it ended up that way. |
