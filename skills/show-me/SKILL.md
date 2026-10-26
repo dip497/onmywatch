@@ -1,6 +1,6 @@
 ---
 name: show-me
-description: 'Make the current topic visible instead of explaining it in prose. "/show-me" shows you: the smallest picture in the chat (pseudocode, call tree, file tree, diff, Mermaid). "/show-me sheet" or "/show-me share" makes one HTML engineering sheet from a small JSON spec and premade assets: lettered panels, mechanism diagrams, annotated examples, tables, limits and flows, to open yourself or publish for others.'
+description: 'Make the current topic visible instead of explaining it in prose. "/show-me" shows you: the smallest picture in the chat (pseudocode, call tree, file tree, diff, Mermaid). "/show-me sheet" or "/show-me share" makes one HTML engineering sheet from a small JSON spec and premade assets: lettered panels, mechanism diagrams, annotated examples, tables, limits and flows, to open yourself or publish for others. "/show-me flow" maps what was built as a user flow: every screen and decision, joined by labelled links (errors in red, returns dashed), with zoom, a full-size view of each screen, a light and dark switch and review marks.'
 disable-model-invocation: true
 ---
 
@@ -21,6 +21,7 @@ Climb only as far as the point needs. Stop at the first level that makes it clea
 | 3. Diagram | Several parts talk to each other, or a lifecycle | Mermaid in the chat |
 | 4. Sheet | Many related parts, a comparison, or the reader asked for `sheet` or `share` | One HTML page built from a JSON spec |
 | 5. Walkthrough page | Understanding how something works and why, with more than one view (usually from `/walk-me-through`) | One HTML page with tabs and a guided tour per tab |
+| 6. Flow page | A user journey through UI states: success, loading, errors, retry, permission branches, or the reader asked for `flow` | One HTML page: a map of screens and decisions, a full-size view, review marks |
 
 ## Level 2: text pictures
 
@@ -110,7 +111,34 @@ You write only the content, as a small JSON file. `scripts/build.py` adds the pr
 
    Steps open one at a time with Previous / Next (or the arrow keys); number keys switch views. To build a picture up, repeat the diagram in the next step with one more node, marked `new`. There is no word cap on a walkthrough; keep each step to one point instead. For review screenshots, build a copy with `--open-all`: every view and step open.
 
-6. **Build**: `python3 <this skill>/scripts/build.py .show-me/<folder>/sheet.json` writes `sheet.html` beside it and checks it. Errors fail on contrast under 4.5:1 in either theme, text under 14 px, no lead, or more than 6 panels. Warnings flag label-style titles, unlabelled arrows, sentences over 25 words, more than 450 words and words to replace. Fix the JSON and build again.
+**Flow pages.** Use it to show what was built as a user flow, so a person can review it the way they review a design. Replace `panels` with `flows`. A flow is a graph: `states` are screens or decisions, `links` join them.
+
+```json
+{"title": "...", "meta": "...", "lead": {"answer": "...", "points": ["..."]},
+ "flows": [
+   {"id": "sign-in", "label": "Sign in", "platform": "iOS", "frame": "phone", "start": "form",
+    "summary": "One sentence: where the flow starts and ends.",
+    "states": [
+      {"id": "form", "title": "Sign in", "sub": "Empty form", "note": "Shows in the full-size view.", "image": "shots/form.png"},
+      {"id": "email-ok", "decision": "Email looks valid?"},
+      {"id": "bad-email", "title": "Sign in", "sub": "Email is not valid", "html": "<div style='padding:24px;color:var(--ink)'>…</div>"}],
+    "links": [
+      {"from": "form", "to": "email-ok", "label": "Tap Sign in"},
+      {"from": "email-ok", "to": "bad-email", "label": "No", "error": true},
+      {"from": "bad-email", "to": "email-ok", "label": "Fix and tap again"}]}]}
+```
+
+   - **Read the real UI first.** Map the entry point, the actions, and the success, loading, error, retry and permission states that matter. Do not invent screens to fill the map.
+   - **A screen** has a `title`, an optional `sub` (which variant it is) and `note`, and one picture: `image` (a real screenshot, a path from the JSON folder; prefer this), `html` (a mock-up that uses the CSS variables such as `var(--ink)` and `var(--note)` so both themes work, with no `id` attributes), or one exhibit above.
+   - **A decision** is a question the app answers, such as `"Billing active?"`. Its links carry the answers: `Yes`, `No`, `Failed`.
+   - **Every link has a label**: what the user did or what the system answered. Mark failure paths `"error": true`; they are red. A link back to an earlier state is found by the builder and drawn dashed. Do not mark it.
+   - Every state must be reachable from `start`. The builder places states left to right and orders each column to cut crossings. When it warns about crossings, set `"row": 0, 1, …` to order a column, or `"col"` to move a state.
+   - `frame` is `phone`, `browser` or `none`. `width` is the screen width in pixels (default 390 for `phone`, 720 otherwise). Screenshots are stored once, and shrunk to twice that width when Pillow is installed.
+   - More than one flow adds a flow picker. Keep flow and state ids stable: review marks are stored under them in the reader's browser, and a mark clears by itself when its screen changes.
+
+   Readers drag or scroll to move the map, use `−`, `+`, `Fit to screen`, Ctrl + wheel or the `+`, `-`, `0` keys to zoom, and click a screen or decision to see it full size. The full-size view lists where it comes from and where each link goes, with left and right arrow keys to step back and forward; the path from the start is drawn in blue on the map. `#flow-id/state-id` in the link opens that state. Flow pages need JavaScript.
+
+6. **Build**: `python3 <this skill>/scripts/build.py .show-me/<folder>/sheet.json` writes `sheet.html` beside it and checks it. Errors fail on contrast under 4.5:1 in either theme, text under 14 px, no lead, or more than 6 panels (sheets only). Warnings flag label-style titles, unlabelled arrows, sentences over 25 words, more than 450 words and words to replace. Fix the JSON and build again.
 7. **Look at it.** Take screenshots at desktop width, at phone width and in dark mode, into the folder's `shots/`, for example `chromium --headless --screenshot=.show-me/<folder>/shots/desktop.png --window-size=1400,1500 file:///full/path/sheet.html`; for dark, add `data-theme="dark"` to `<html>` in a copy. Read each one. Fix clipped text, overlaps, crossed lines and anything hard to read. At most two rounds of fixes. If you could not take screenshots, say so; never report that it looks right unseen.
 8. **Need a part the builder does not have?** Build first, then add it by hand to the HTML, using the CSS variables (`--ink`, `--note`, `--ok`, `--bad`, `--muted`, `--paper`, `--fill`) so both themes work, and run `scripts/check.py sheet.html`.
 

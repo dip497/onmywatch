@@ -10,7 +10,7 @@ from html.parser import HTMLParser
 EXHIBITS = {"tree", "anno", "limit", "flow", "timeline", "diagram", "path", "decisions", "gaps", "code"}
 BANNED = ["utilize", "leverage", "ensure", "robust", "seamless", "in order to", "prior to", "commence", "very", "basically"]
 PAIRS = [("ink", "paper"), ("muted", "paper"), ("muted", "fill"), ("note", "paper"), ("note", "note-soft"),
-         ("ok", "paper"), ("bad", "paper"), ("badge-ink", "badge")]
+         ("ok", "paper"), ("bad", "paper"), ("badge-ink", "badge"), ("paper", "ok"), ("note", "fill")]
 
 problems = []
 
@@ -34,7 +34,7 @@ class Sheet(HTMLParser):
         cls = set((a.get("class") or "").split())
         if tag not in ("br", "img", "meta", "link", "input", "path", "rect", "circle", "line", "polyline", "polygon"):
             self.stack.append((tag, cls))
-        if tag == "div" and "walkthrough" in cls:
+        if tag == "div" and cls & {"walkthrough", "flowpage"}:
             self.walkthrough = True
         if tag == "section" and "view" in cls:
             self.view_no = getattr(self, "view_no", 0) + 1

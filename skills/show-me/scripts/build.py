@@ -3,7 +3,9 @@
 Usage: python3 build.py page.json [out.html] [--open-all]
 --open-all writes every step open and every view visible, for review screenshots.
 A spec with "panels" builds a one-screen sheet. A spec with "views" builds a walkthrough:
-tabs, one guided tour of steps per tab. Writes out.html (default: next to the JSON) with the
+tabs, one guided tour of steps per tab. A spec with "flows" builds flow pages: screens and
+decisions joined by labelled links, with zoom, review marks and a full-size view (see flow.py).
+Writes out.html (default: next to the JSON) with the
 CSS inlined, runs check.py, exits 1 on a check error.
 """
 import json
@@ -11,6 +13,9 @@ import subprocess
 import sys
 from html import escape as e
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+import flow as flow_pages  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -277,6 +282,7 @@ if(views.length)show(0);})();
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 OPEN_ALL = "--open-all" in sys.argv
 spec = json.loads(Path(args[0]).read_text())
+SPEC_DIR = Path(args[0]).resolve().parent
 out = Path(args[1]) if len(args) > 1 else Path(args[0]).with_suffix(".html")
 lead = spec["lead"]
 points = "".join(f"<li>{code(p)}</li>" for p in lead.get("points", []))
@@ -285,6 +291,10 @@ if "views" in spec:
     main = (f'<nav class="tabs" role="tablist">{tabs}</nav>'
             f'<div class="views">{"".join(view(i, v) for i, v in enumerate(spec["views"]))}</div>')
     kind, script = "walkthrough", ("" if OPEN_ALL else TOUR_JS)
+elif "flows" in spec:
+    flow_js = f"<script>{(HERE.parent / 'assets' / 'flow.js').read_text()}</script>"
+    main, script = flow_pages.flow_page(spec, SPEC_DIR, exhibit, list(EXHIBITS), code, warnings, flow_js)
+    kind = "flowpage"
 else:
     main = f'<div class="grid">{"".join(panel(i, p) for i, p in enumerate(spec["panels"]))}</div>'
     kind, script = "sheet", ""
