@@ -15,7 +15,9 @@ from html import escape as e
 from pathlib import Path
 
 sys.dont_write_bytecode = True
+import diagrams  # noqa: E402
 import flow as flow_pages  # noqa: E402
+from graph_layout import columns, find_returns  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -136,9 +138,31 @@ def _clear(points, others):
     return not any(_hits(s, r) for s in segs for r in others)
 
 
+def place_nodes(d, claim):
+    """Nodes without `col` and `row` get them from the layered layout; a node may pin either one."""
+    ids = [n["id"] for n in d["nodes"]]
+    for ed in d["edges"]:
+        for end in ("from", "to"):
+            if ed[end] not in ids:
+                sys.exit(f"diagram '{claim[:40]}': edge end '{ed[end]}' is not a node")
+    if len(ids) > 9:
+        warnings.append(f"diagram '{claim[:40]}': {len(ids)} boxes; above 9 it is probably two diagrams")
+    if len(d["edges"]) > 12:
+        warnings.append(f"diagram '{claim[:40]}': {len(d['edges'])} arrows; above 12, split it or drop the obvious ones")
+    marked = sum(1 for x in d["nodes"] + d["edges"] if x.get("new"))
+    if marked > 3:
+        warnings.append(f"diagram '{claim[:40]}': {marked} parts marked new; blue only works on the one or two that matter")
+    if all("col" in n and "row" in n for n in d["nodes"]):
+        return d["nodes"]
+    back, visit = find_returns(ids, d["edges"], [])
+    pinned = {n["id"]: {k: n[k] for k in ("col", "row") if k in n} for n in d["nodes"]}
+    col, cols, _ = columns(visit, d["edges"], back, pinned)
+    return [{**n, "col": col[n["id"]], "row": cols[col[n["id"]]].index(n["id"])} for n in d["nodes"]]
+
+
 def diagram(d, claim):
     """Nodes sit on a grid (col, row). Each edge takes the first route that crosses no other box."""
-    nodes = {n["id"]: n for n in d["nodes"]}
+    nodes = {n["id"]: n for n in place_nodes(d, claim)}
     char, pad, row_h, gap_x, gap_y = 9, 28, 64, 120, 80
     cols = max(n["col"] for n in nodes.values()) + 1
     rows = max(n["row"] for n in nodes.values()) + 1
@@ -179,6 +203,8 @@ def diagram(d, claim):
         if a["row"] != b["row"] and a["col"] != b["col"]:
             cands.append([(ax + aw if right else ax, acy + off), (bcx + off, acy + off), (bcx + off, by if down else by + bh)])
             cands.append([(acx + off, ay + ah if down else ay), (acx + off, bcy + off), (bx if right else bx + bw, bcy + off)])
+            gx = (bx - gap_x / 2 if right else bx + bw + gap_x / 2) + off
+            cands.append([(ax + aw if right else ax, acy + off), (gx, acy + off), (gx, bcy + off), (bx if right else bx + bw, bcy + off)])
         for lane_y in (max(ay, by) + row_h + gap_y / 2 + off, min(ay, by) - gap_y / 2 + off):
             if 4 < lane_y < H - 4:
                 sy = ay + ah if lane_y > ay else ay
@@ -218,13 +244,14 @@ def diagram(d, claim):
     W = used_right
     marker = ('<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" '
               'orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>')
-    svg = (f'<svg viewBox="0 0 {W:.0f} {H:.0f}" role="img" aria-label="{e(claim)}" style="min-width:{min(W, 680):.0f}px">'
+    svg = (f'<svg viewBox="0 0 {W:.0f} {H:.0f}" role="img" aria-label="{e(claim)}" style="min-width:{min(W * 0.85, 680):.0f}px;max-width:{W * 1.1:.0f}px">'
            f'{marker}{"".join(edges)}{"".join(labels)}{"".join(shapes)}</svg>')
     return f'<figure class="diagram"><div class="scroll">{svg}</div></figure>'
 
 
 EXHIBITS = {"diagram": None, "tree": tree, "anno": anno, "table": table, "limits": limits, "flow": flow,
-            "timeline": timeline, "path": path, "decisions": decisions, "gaps": gaps, "code": snippet}
+            "timeline": timeline, "path": path, "decisions": decisions, "gaps": gaps, "code": snippet,
+            "sequence": None, "schema": None, "schedule": None}
 
 
 def exhibit(item, claim, where, required=True):
@@ -234,7 +261,12 @@ def exhibit(item, claim, where, required=True):
     if not kinds:
         return ""
     k = kinds[0]
-    inner = diagram(item[k], claim) if k == "diagram" else EXHIBITS[k](item[k])
+    if k == "diagram":
+        inner = diagram(item[k], claim)
+    elif EXHIBITS[k] is None:
+        inner = getattr(diagrams, k)(item[k], claim, warnings)
+    else:
+        inner = EXHIBITS[k](item[k])
     cap = f'<p class="caption">{code(item["caption"])}</p>' if item.get("caption") else ""
     return inner + cap
 
@@ -298,6 +330,7 @@ elif "flows" in spec:
 else:
     main = f'<div class="grid">{"".join(panel(i, p) for i, p in enumerate(spec["panels"]))}</div>'
     kind, script = "sheet", ""
+css = (HERE.parent / "assets" / "sheet.css").read_text()
 page = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -306,7 +339,7 @@ page = f"""<!doctype html>
 <title>{e(spec["title"])}</title>
 {FONTS}
 <style>
-{(HERE.parent / "assets" / "sheet.css").read_text()}
+{css}
 </style>
 </head>
 <body>

@@ -1,0 +1,37 @@
+{
+  "title": "Reviewing a Flow Page",
+  "meta": "flow with real screenshots · browser frame · 2026-10-26",
+  "lead": {
+    "answer": "A reviewer opens each screen, follows its links, and ticks it when it is right.",
+    "points": [
+      "Every screen here is a real screenshot of `sign-in-flow.html`.",
+      "Review marks stay in the reviewer's browser, not in the page."
+    ]
+  },
+  "flows": [
+    {"id": "review-a-flow", "label": "Review a flow page", "platform": "Chrome · 1200 px", "frame": "browser", "width": 1200,
+     "summary": "From opening the page to a finished review, including switching flows and themes.",
+     "start": "map",
+     "states": [
+       {"id": "map", "title": "The map", "sub": "Fitted to the screen", "note": "Wide flows open at the zoom that fits. Drag to move; Ctrl + wheel to zoom.", "image": "review-shots/map.png"},
+       {"id": "kind", "decision": "Screen or decision?"},
+       {"id": "screen", "title": "Full-size screen", "sub": "Wrong email or password", "note": "It lists where the screen comes from and every link out of it.", "image": "review-shots/screen.png"},
+       {"id": "decision", "title": "Full-size decision", "sub": "Server answer?", "note": "Each answer is a button. Red buttons are error paths.", "image": "review-shots/decision.png"},
+       {"id": "right", "decision": "Is the screen right?"},
+       {"id": "reviewed", "title": "Ticked screens", "sub": "Reviewed 3 / 7", "note": "A tick dims the screen and adds a green mark. It clears by itself when the screen changes.", "image": "review-shots/reviewed.png"},
+       {"id": "dark", "title": "Dark theme", "sub": "Light / Dark button", "note": "The choice is remembered for the next visit.", "image": "review-shots/dark.png"},
+       {"id": "other", "title": "Another flow", "sub": "Flow picker", "note": "One page can hold several flows. Each has its own review count.", "image": "review-shots/other-flow.png"}
+     ],
+     "links": [
+       {"from": "map", "to": "kind", "label": "Click a box"},
+       {"from": "kind", "to": "screen", "label": "Screen"},
+       {"from": "kind", "to": "decision", "label": "Decision"},
+       {"from": "decision", "to": "screen", "label": "Click an answer"},
+       {"from": "screen", "to": "right", "label": "Read it"},
+       {"from": "right", "to": "reviewed", "label": "Yes: tick it"},
+       {"from": "right", "to": "map", "label": "No: note it, close", "error": true},
+       {"from": "reviewed", "to": "dark", "label": "Press Dark"},
+       {"from": "reviewed", "to": "other", "label": "Pick another flow"}
+     ]}
+  ]
+}

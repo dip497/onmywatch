@@ -1,0 +1,58 @@
+{
+  "title": "Releasing a Skill Change",
+  "meta": "flow without screens · each state is a code block or a table · onmywatch 0.31.0",
+  "lead": {
+    "answer": "A skill change reaches users only after a version bump, a sync, a commit and a push.",
+    "points": [
+      "Commit hooks always run. Fix what they find; never skip them.",
+      "The agent cannot push to `main`, so you run the push yourself."
+    ]
+  },
+  "flows": [
+    {"id": "plugin-release", "label": "Release a skill change", "platform": "git · Claude Code", "frame": "none", "width": 400,
+     "summary": "The steps that took onmywatch from 0.30.1 to 0.31.0.",
+     "start": "edit",
+     "states": [
+       {"id": "edit", "title": "Change the skill", "sub": "skills/<name>/",
+        "note": "Build the examples again if the change touches show-me.",
+        "code": {"where": "terminal", "text": "python3 skills/show-me/scripts/build.py \\\n  skills/show-me/examples/flows/sign-in-flow.json"}},
+       {"id": "bump", "title": "Bump the version", "sub": ".claude-plugin/plugin.json",
+        "code": {"where": ".claude-plugin/plugin.json", "text": "\"version\": \"0.31.0\""}},
+       {"id": "sync", "title": "Sync the other hosts", "sub": "scripts/sync-hosts.py",
+        "note": "Copies the version to the Codex and Cursor manifests and marks user-only skills for Codex.",
+        "code": {"where": "terminal", "text": "python3 scripts/sync-hosts.py\npython3 scripts/sync-hosts.py --check"}},
+       {"id": "commit", "title": "Commit with hooks on", "sub": "git commit",
+        "code": {"where": "terminal", "text": "git add -A\ngit commit -m \"show-me: ...\""}},
+       {"id": "hooks", "decision": "Hooks pass?"},
+       {"id": "fix", "title": "Fix the cause", "sub": "Never --no-verify", "row": 1,
+        "note": "Fix what the hook found, then commit again with hooks on.",
+        "table": {"head": ["Do", "Never"], "rows": [
+          ["ok: Fix the code", "bad: --no-verify"],
+          ["ok: Amend with hooks on", "bad: core.hooksPath=/dev/null"]]}},
+       {"id": "push", "title": "Push to main", "sub": "The agent asks", "row": 0,
+        "code": {"where": "terminal", "text": "git push origin main"}},
+       {"id": "allowed", "decision": "Agent may push?"},
+       {"id": "you", "title": "You push", "sub": "! prefix",
+        "note": "A deny rule blocks the agent. The ! prefix runs the command in your own session.",
+        "code": {"where": "Claude Code prompt", "text": "! git push origin main"}},
+       {"id": "live", "title": "Users update", "sub": "On each host",
+        "table": {"head": ["Host", "Gets 0.31.0"], "rows": [
+          ["Claude Code, auto-update on", "ok: Next start"],
+          ["Claude Code, auto-update off", "ok: After /plugin update"],
+          ["Codex", "ok: After marketplace upgrade"]]}}
+     ],
+     "links": [
+       {"from": "edit", "to": "bump", "label": "Examples build"},
+       {"from": "bump", "to": "sync", "label": "New version"},
+       {"from": "sync", "to": "commit", "label": "--check passes"},
+       {"from": "commit", "to": "hooks", "label": "Hooks run"},
+       {"from": "hooks", "to": "fix", "label": "No", "error": true},
+       {"from": "fix", "to": "commit", "label": "Commit again"},
+       {"from": "hooks", "to": "push", "label": "Yes"},
+       {"from": "push", "to": "allowed", "label": "Policy check"},
+       {"from": "allowed", "to": "you", "label": "No: denied", "error": true},
+       {"from": "allowed", "to": "live", "label": "Yes"},
+       {"from": "you", "to": "live", "label": "main moves"}
+     ]}
+  ]
+}

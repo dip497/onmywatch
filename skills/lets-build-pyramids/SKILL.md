@@ -1,11 +1,14 @@
 ---
 name: lets-build-pyramids
 description: "Architecture review for a feature before it is built. Apply when planning or approving a feature, service, endpoint, job, cache or data model, and when asked 'will this scale', 'how should we design this', 'is this the right architecture' or 'what breaks at 10x'. Researches how others solved it, compares real alternatives with numbers, and stress-tests the choice."
+argument-hint: '[feature or design to review]'
 ---
 
 # lets-build-pyramids
 
 A pyramid is designed from the base, sized for the weight it will carry, and still standing 4,500 years later. Design features the same way.
+
+Feature to review: $ARGUMENTS. If that is empty, review the one in the conversation.
 
 A checklist filled in from memory is not a design review. This skill is research and thinking first; the answer comes last.
 

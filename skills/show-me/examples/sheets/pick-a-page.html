@@ -3,30 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How onmywatch Works</title>
+<title>Pick a show-me Page</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Readability floor: body 17px, nothing under 14px, text contrast 4.5:1 or more in both themes. */
 :root{
-  --paper:#fbf9f5; --ink:#2a2927; --muted:#5e5a53; --line:#a8a296; --hair:#e5e0d7;
-  --badge:#ebe6dc; --badge-ink:#2a2927; --fill:#f3efe8;
-  --note:#2c5d99; --note-soft:#e9eff7; --ok:#2d6a45; --ok-soft:#e6f1ea; --bad:#a63d36; --bezel:#2a2927;
+  --paper:#f4f4f3; --ink:#1e1e1e; --muted:#555555; --line:#9b9b9b; --hair:#dddddc;
+  --badge:#e4e4e3; --badge-ink:#1e1e1e; --fill:#eaeae9;
+  --note:#2a2a2a; --note-soft:#e1e1e0; --ok:#2f6a45; --ok-soft:#e3ece6; --bad:#a3372f; --bezel:#2a2a2a;
   --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
   --radius:8px; color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#1c1e22; --ink:#e3dfd8; --muted:#aaa59c; --line:#5d6168; --hair:#33363c;
-  --badge:#2c3036; --badge-ink:#e3dfd8; --fill:#24272c;
-  --note:#93b6ea; --note-soft:#212c3c; --ok:#88c9a2; --ok-soft:#1f3328; --bad:#eb9a92; --bezel:#4a4e55; color-scheme:dark;
+  --paper:#1a1a1a; --ink:#e6e6e5; --muted:#a8a8a7; --line:#5e5e5e; --hair:#2f2f2f;
+  --badge:#2b2b2b; --badge-ink:#e6e6e5; --fill:#222222;
+  --note:#f1f1f0; --note-soft:#333333; --ok:#8ec8a0; --ok-soft:#1f2c24; --bad:#ec9a92; --bezel:#4a4a4a; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --paper:#1c1e22; --ink:#e3dfd8; --muted:#aaa59c; --line:#5d6168; --hair:#33363c;
-  --badge:#2c3036; --badge-ink:#e3dfd8; --fill:#24272c;
-  --note:#93b6ea; --note-soft:#212c3c; --ok:#88c9a2; --ok-soft:#1f3328; --bad:#eb9a92; --bezel:#4a4e55; color-scheme:dark;
+  --paper:#1a1a1a; --ink:#e6e6e5; --muted:#a8a8a7; --line:#5e5e5e; --hair:#2f2f2f;
+  --badge:#2b2b2b; --badge-ink:#e6e6e5; --fill:#222222;
+  --note:#f1f1f0; --note-soft:#333333; --ok:#8ec8a0; --ok-soft:#1f2c24; --bad:#ec9a92; --bezel:#4a4a4a; color-scheme:dark;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
 code,.mono{font-family:var(--mono);font-size:.9em}
+::selection{background:var(--note-soft);color:var(--ink)}
+html{scrollbar-color:var(--line) transparent}
+a{color:var(--note);text-underline-offset:3px}
+table,.limits,.schedule,.meta{font-variant-numeric:tabular-nums}
 
 .sheet{max-width:1080px;margin:24px auto;border:1px solid var(--line);border-radius:12px;padding:0 0 28px;overflow:hidden}
 .titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:20px 28px}
@@ -34,7 +38,7 @@ code,.mono{font-family:var(--mono);font-size:.9em}
 .titleblock .meta{font:14px var(--mono);color:var(--muted)}
 
 /* The answer: read this and stop if it is enough. */
-.lead{margin:24px 28px 8px;padding:16px 20px;border-left:4px solid var(--note);border-radius:0 var(--radius) var(--radius) 0;background:var(--note-soft)}
+.lead{margin:24px 28px 8px;padding:16px 20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--note-soft)}
 .lead p{margin:0 0 8px;font-size:19px;font-weight:500}
 .lead ul{margin:0;padding-left:20px}
 .lead li{margin:4px 0}
@@ -63,8 +67,10 @@ code,.mono{font-family:var(--mono);font-size:.9em}
 table{width:100%;border-collapse:collapse;font-size:16px}
 th{font:500 14px var(--sans);color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
 td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
-.ok{color:var(--ok);font-weight:500}.ok::before{content:"✓ "}
-.bad{color:var(--bad);font-weight:500}.bad::before{content:"✕ "}
+.ok,.bad{font-weight:500}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.ok::before,.bad::before{content:"";display:inline-block;width:.8em;height:.8em;margin-right:.35em;vertical-align:-.05em;background:currentColor;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+.ok::before{--icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.bad::before{--icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")}
 
 .limit{margin:4px 0 20px}
 .limit .lab{display:flex;justify-content:space-between;gap:12px;font-size:16px}
@@ -81,7 +87,7 @@ td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
 
 .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .flow .box{border:1px solid var(--line);padding:8px 14px;font-size:16px}
-.flow .box.new{border-style:dashed;border-color:var(--note);color:var(--note)}
+.flow .box.new{border:2px dashed var(--note);color:var(--note);font-weight:600}
 .flow .arrow{color:var(--muted);font-size:18px}
 
 .timeline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;position:relative}
@@ -95,10 +101,10 @@ figure.diagram{margin:0}
 figure.diagram .scroll{overflow-x:auto}
 figure.diagram svg{display:block;width:100%;max-width:100%;height:auto;min-width:680px;color:var(--ink)}
 figure.diagram .node{fill:var(--paper);stroke:var(--line);stroke-width:1.5}
-figure.diagram .node.new{stroke:var(--note);stroke-dasharray:6 4}
+figure.diagram .node.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
 figure.diagram .node.store{fill:var(--fill)}
 figure.diagram .edge{fill:none;stroke:var(--muted);stroke-width:1.5}
-figure.diagram .edge.new{stroke:var(--note);stroke-dasharray:6 4}
+figure.diagram .edge.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
 figure.diagram .lbl{font:600 15px var(--sans);fill:currentColor}
 figure.diagram .sub{font:13px var(--sans);fill:var(--muted)}
 figure.diagram .elbl{font:13px var(--mono);fill:var(--muted)}
@@ -149,7 +155,7 @@ ol.path .passes{display:block;font-size:15px;color:var(--muted)}
 
 /* decisions: choice, what lost, why, how sure, where it says so */
 .decisions{display:grid;gap:12px}
-.decision{border:1px solid var(--hair);border-left:4px solid var(--note);padding:12px 16px;background:var(--fill)}
+.decision{border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;background:var(--fill)}
 .decision .dhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
 .decision p{margin:8px 0 0}
 .decision .over{margin-top:6px;font-size:15px;color:var(--muted)}
@@ -173,7 +179,7 @@ details>summary{cursor:pointer;color:var(--note);font-size:15px;margin:6px 0}
 
 /* gaps: what we could not find */
 ul.gaps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-ul.gaps li{border-left:4px solid var(--bad);padding:8px 14px;background:var(--fill)}
+ul.gaps li{border:1px dashed var(--bad);border-radius:var(--radius);padding:10px 14px}
 ul.gaps .looked,ul.gaps .ask{display:block;font-size:15px;color:var(--muted)}
 
 /* Flow: screens and decisions joined by labelled links. Click a screen to see it full size. */
@@ -224,11 +230,14 @@ ul.gaps .looked,ul.gaps .ask{display:block;font-size:15px;color:var(--muted)}
 .fnode.onpath .thumb{outline-style:dashed}
 .thumb{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--hair);border-radius:6px}
 .thumb.frame-phone{border-radius:18px;border:4px solid var(--bezel)}
-.thumb.frame-browser{border-top:12px solid var(--hair)}
+.thumb.frame-browser,.foscreen.frame-browser{--bar:12px;padding-top:var(--bar);background:
+  radial-gradient(circle at 8px 50%,var(--line) 2px,transparent 2.5px) 0 0/100% var(--bar) no-repeat,
+  radial-gradient(circle at 16px 50%,var(--line) 2px,transparent 2.5px) 0 0/100% var(--bar) no-repeat,
+  linear-gradient(var(--hair),var(--hair)) 0 0/100% var(--bar) no-repeat,var(--paper)}
 .thumb .scale{transform-origin:0 0;pointer-events:none}
 .reviewed .thumb .scale{opacity:.4}
-.reviewed .thumb::after{content:"✓";position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
-  border-radius:50%;background:var(--ok);color:var(--paper);display:grid;place-items:center;font:600 22px var(--sans)}
+.reviewed .thumb::after{content:"";position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
+  background:var(--ok);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cmask id='m'%3E%3Ccircle cx='12' cy='12' r='12' fill='white'/%3E%3Cpath d='M7 12.4l3.3 3.3L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='12' cy='12' r='12' fill='white' mask='url(%23m)'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cmask id='m'%3E%3Ccircle cx='12' cy='12' r='12' fill='white'/%3E%3Cpath d='M7 12.4l3.3 3.3L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='12' cy='12' r='12' fill='white' mask='url(%23m)'/%3E%3C/svg%3E") center/contain no-repeat}
 .fdec{position:absolute;display:grid;place-items:center;text-align:center;padding:6px 14px;font:500 14px/1.3 var(--sans);color:var(--ink);
   background:var(--paper);border:1.5px solid var(--line);border-radius:20px;cursor:pointer}
 .fdec:hover{background:var(--hair)}
@@ -254,7 +263,7 @@ input.review{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ok);cursor
   background:var(--fill) radial-gradient(var(--hair) 1px,transparent 1px) 0 0/12px 12px}
 .foscreen{margin:0 auto;background:var(--paper);overflow:hidden}
 .foscreen.frame-phone{border:8px solid var(--bezel);border-radius:36px}
-.foscreen.frame-browser{border:1px solid var(--hair);border-top:22px solid var(--hair);border-radius:8px}
+.foscreen.frame-browser{--bar:22px;border:1px solid var(--hair);border-radius:8px}
 .foscreen.decision{background:none;text-align:center}
 .foscreen.decision p{display:inline-block;margin:0;padding:18px 28px;font-size:20px;border:1.5px solid var(--line);border-radius:24px;background:var(--paper)}
 .foout{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -263,13 +272,32 @@ input.review{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ok);cursor
 .fnode:focus-visible,.fdec:focus-visible,.fover button:focus-visible,.zoom button:focus-visible,.ftheme:focus-visible,input.review:focus-visible,.foutline button:focus-visible{outline:2px solid var(--note);outline-offset:2px}
 @media (max-width:760px){.fbar,.flowsec{padding-left:16px;padding-right:16px}.fmap{max-height:60vh}.fover{width:100vw;max-height:100vh;border-radius:0}}
 
+/* sequence, schema, schedule: more drawn exhibits; same colour meanings as the diagram */
+figure.diagram .life{stroke:var(--hair);stroke-width:1.5;stroke-dasharray:4 4}
+figure.diagram .edge.reply{stroke-dasharray:5 4}
+figure.diagram .edge.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .edge.bad{stroke:var(--bad)}
+figure.diagram .elbl.bad{fill:var(--bad)}
+figure.diagram .thead{fill:var(--fill);stroke:var(--line);stroke-width:1}
+figure.diagram .trow{stroke:var(--hair)}
+figure.diagram .cname{font:14px var(--mono);fill:var(--ink)}
+figure.diagram .cname.key{font-weight:500;fill:var(--note)}
+figure.diagram .ctype{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .grid{stroke:var(--hair)}
+figure.diagram .rlbl{font:14px var(--sans);fill:var(--ink)}
+figure.diagram .bar{fill:var(--muted);opacity:.55}
+figure.diagram .bar.done{fill:var(--ok);opacity:1}
+figure.diagram .bar.late{fill:var(--bad);opacity:1}
+figure.diagram .bar.new{fill:var(--note-soft);stroke:var(--note);stroke-dasharray:5 3;opacity:1}
+figure.diagram .today{stroke:var(--note);stroke-width:1.5}
+
 </style>
 </head>
 <body>
 <div class="sheet sheet">
-<div class="titleblock"><h1>How onmywatch Works</h1><span class="meta">Claude Code plugin · v0.20 · github.com/dip497/onmywatch</span></div>
-<div class="lead"><p>onmywatch is one plugin. Skills change how the agent answers, designs and recovers.</p><ul><li>just-tell-me runs in every session. You start the others, or the agent does.</li><li>Each skill has evals that run with and without the plugin.</li><li>A change reaches your session only after a version bump and an update.</li></ul></div>
-<div class="grid"><section class="panel"><header><span class="badge">A</span><div><h2>Four folders hold the whole plugin.</h2><span class="ref">repository root</span></div></header><div class="body"><div class="tree"><div class="root"><b>onmywatch</b><small>one plugin, one marketplace</small></div><ul><li><code>skills/</code><small>one folder per skill, one SKILL.md in each</small></li><li><code>hooks/</code><small>starts just-tell-me in every session</small></li><li><code>evals/</code><small>test cases for each skill</small></li><li><code>.claude-plugin/</code><small>name, version and marketplace</small></li></ul></div></div></section><section class="panel"><header><span class="badge">B</span><div><h2>The description decides when a skill starts.</h2><span class="ref">skills/brooooo/SKILL.md</span></div></header><div class="body"><div class="anno"><span class="seg n"><span class="t">name: brooooo</span><span class="why">the command you type</span></span><span class="seg n"><span class="t">description: Invoke when the agent goes the wrong way</span><span class="why">the agent matches your words to this</span></span><span class="seg x"><span class="t">disable-model-invocation: true</span><span class="why">the agent cannot start it</span></span></div></div></section><section class="panel w6"><header><span class="badge">C</span><div><h2>Three skills can start on their own.</h2><span class="ref">trigger per skill</span></div></header><div class="body"><div class="scroll"><table><tr><th>Skill</th><th>Agent starts it</th></tr><tr><td>just-tell-me</td><td class="ok">Every session</td></tr><tr><td>lets-build-pyramids</td><td class="ok">Before a feature</td></tr><tr><td>trust-issues</td><td class="ok">When fixes fail</td></tr><tr><td>brooooo</td><td class="bad">Only you</td></tr><tr><td>show-me</td><td class="bad">Only you</td></tr></table></div></div></section><section class="panel w6"><header><span class="badge">D</span><div><h2>The plugin raises every score.</h2><span class="ref">evals, 3 runs per case</span></div></header><div class="body"><div class="limit"><div class="lab">Design review, audit log<b>0.90 · was 0.57</b></div><div class="track"><i style="width:90%"></i></div></div><div class="limit"><div class="lab">Estimate in agent time<b>1.00 · was 0.60</b></div><div class="track"><i style="width:100%"></i></div></div><div class="limit"><div class="lab">brooooo, wrong direction<b>0.90</b></div><div class="track"><i style="width:90%"></i></div></div></div></section><section class="panel"><header><span class="badge">E</span><div><h2>A push reaches your session through the plugin cache.</h2><span class="ref">dashed is a step you run</span></div></header><div class="body"><figure class="diagram"><div class="scroll"><svg viewBox="0 0 858 252" role="img" aria-label="A push reaches your session through the plugin cache." style="min-width:680px"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs><path class="edge new" d="M198,52 L342,52" marker-end="url(#arrow)"/><path class="edge new" d="M490,52 L634,52" marker-end="url(#arrow)"/><path class="edge" d="M730,84 L730,164" marker-end="url(#arrow)"/><rect class="mask" x="232" y="32" width="76" height="19"/><text class="elbl new" x="238" y="46">git push</text><rect class="mask" x="504" y="32" width="116" height="19"/><text class="elbl new" x="510" y="46">plugin update</text><rect class="mask" x="738" y="115" width="108" height="19"/><text class="elbl" x="744" y="129">loads skills</text><rect class="node " x="20" y="20" width="178.0" height="64"/><text class="lbl" x="109.0" y="49.0" text-anchor="middle">Local repo</text><text class="sub" x="109.0" y="68.0" text-anchor="middle">~/projects/onmywatch</text><rect class="node " x="342.0" y="20" width="148.0" height="64"/><text class="lbl" x="416.0" y="49.0" text-anchor="middle">GitHub</text><text class="sub" x="416.0" y="68.0" text-anchor="middle">dip497/onmywatch</text><rect class="node store" x="634.0" y="20" width="193.0" height="64"/><text class="lbl" x="730.5" y="49.0" text-anchor="middle">Plugin cache</text><text class="sub" x="730.5" y="68.0" text-anchor="middle">one folder per version</text><rect class="node " x="634.0" y="164" width="193.0" height="64"/><text class="lbl" x="730.5" y="193.0" text-anchor="middle">Session</text><text class="sub" x="730.5" y="212.0" text-anchor="middle">after restart</text></svg></div></figure><p class="caption">Without a version bump, <code>plugin update</code> keeps the old copy.</p></div></section></div>
+<div class="titleblock"><h1>Pick a show-me Page</h1><span class="meta">start here · skills/show-me/SKILL.md · 0.31.0</span></div>
+<div class="lead"><p>Ask for the smallest picture that answers the question.</p><ul><li>Plain <code>/show-me</code> answers in the chat with text only. Anything that needs a drawn diagram becomes a page.</li><li>Add <code>share</code> to publish a page as a private link.</li></ul></div>
+<div class="grid"><section class="panel"><header><span class="badge">A</span><div><h2>The question decides the command.</h2><span class="ref">SKILL.md, Pick the level</span></div></header><div class="body"><div class="scroll"><table><tr><th>You want to know</th><th>Type</th><th>You get</th></tr><tr><td>One rule or one fact</td><td><code>/show-me</code></td><td>two or three sentences</td></tr><tr><td>What calls what, or what a change does</td><td><code>/show-me</code></td><td>a call tree, file tree or diff in a code block</td></tr><tr><td>How several parts talk to each other</td><td><code>/show-me</code></td><td>a one-panel page with a drawn diagram</td></tr><tr><td>A comparison or a design choice</td><td><code>/show-me sheet</code></td><td>one page of lettered panels</td></tr><tr><td>How something works and why</td><td><code>/walk-me-through</code></td><td>a page with tabs and steps</td></tr><tr><td>What was built, screen by screen</td><td><code>/show-me flow</code></td><td>a map of screens and decisions</td></tr></table></div></div></section><section class="panel w6"><header><span class="badge">B</span><div><h2>The terminal cannot draw, so diagrams go on a page.</h2><span class="ref">SKILL.md, Never put Mermaid in the chat</span></div></header><div class="body"><div class="scroll"><table><tr><th>In the chat</th><th>Result</th></tr><tr><td class="ok">Text in a code block</td><td>reads the same everywhere</td></tr><tr><td class="bad">Mermaid</td><td>shows as source code</td></tr><tr><td class="bad">SVG or HTML</td><td>shows as source code</td></tr></table></div></div></section><section class="panel w6"><header><span class="badge">C</span><div><h2>Four habits make a page worth reading.</h2><span class="ref">SKILL.md, Writing</span></div></header><div class="body"><div class="scroll"><table><tr><th>Do</th><th>Not</th></tr><tr><td class="ok">Titles that state the point</td><td class="bad">Titles that name a topic</td></tr><tr><td class="ok">Real names, numbers, <code>file:line</code></td><td class="bad">Invented data</td></tr><tr><td class="ok">Label every arrow</td><td class="bad">Bare arrows</td></tr><tr><td class="ok">Look at the screenshots</td><td class="bad">Say it looks right unseen</td></tr></table></div></div></section><section class="panel"><header><span class="badge">D</span><div><h2>One JSON key picks the kind of page.</h2><span class="ref">examples/</span></div></header><div class="body"><div class="tree"><div class="root"><b><code>page.json</code></b><small>has exactly one of three keys</small></div><ul><li><code>panels</code><small>sheet: <code>sheets/</code></small></li><li><code>views</code><small>walkthrough: <code>walkthroughs/</code></small></li><li><code>flows</code><small>flow page: <code>flows/</code></small></li></ul></div></div></section><section class="panel"><header><span class="badge">E</span><div><h2>Every page is built and checked the same way.</h2><span class="ref">scripts/build.py, scripts/check.py</span></div></header><div class="body"><div class="flow"><span class="box">Write <code>page.json</code></span><span class="arrow">→</span><span class="box"><code>build.py</code></span><span class="arrow">→</span><span class="box"><code>check.py</code></span><span class="arrow">→</span><span class="box">Screenshots</span><span class="arrow">→</span><span class="box new">Open or <code>share</code></span></div></div></section></div>
 </div>
 
 </body>

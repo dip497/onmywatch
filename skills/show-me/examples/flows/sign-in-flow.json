@@ -1,0 +1,207 @@
+{
+ "title": "Sign-in flows",
+  "meta": "example · HTML mock-ups · show-me flow",
+ "lead": {
+  "answer": "A person reaches the home screen in one try, or after one fixed mistake.",
+  "points": [
+   "Every failure keeps what the person typed and has a way back.",
+   "No message says whether an email has an account."
+  ]
+ },
+ "flows": [
+  {
+   "id": "sign-in",
+   "label": "Sign in",
+   "platform": "iOS · mock-ups",
+   "frame": "phone",
+   "summary": "From the sign-in screen to the home screen, with every way it can fail.",
+   "start": "form",
+   "states": [
+    {
+     "id": "form",
+     "title": "Sign in",
+     "sub": "Empty form",
+     "note": "Both fields are empty. The button stays on, so a person learns the rules by trying.",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><p style='margin:0 0 20px;color:var(--muted)'>Welcome back.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>&nbsp;</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>&nbsp;</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Sign in</div><p style='text-align:center;color:var(--note);margin-top:18px'>Forgot password?</p></div>"
+    },
+    {
+     "id": "email-ok",
+     "decision": "Email looks valid?"
+    },
+    {
+     "id": "bad-email",
+     "title": "Sign in",
+     "sub": "Email is not valid",
+     "note": "The app checks the shape of the email before it sends anything.",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><p style='margin:0 0 20px;color:var(--muted)'>Welcome back.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1.5px solid var(--bad);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@</div><div style='color:var(--bad);font-size:14px;margin:-8px 0 12px'>Enter an email like name@example.com.</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>••••••••</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Sign in</div></div>"
+    },
+    {
+     "id": "checking",
+     "title": "Checking",
+     "sub": "Waiting for the server",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><p style='margin:0 0 20px;color:var(--muted)'>Welcome back.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@example.com</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>••••••••</div><div style='background:var(--fill);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Signing in…</div></div>"
+    },
+    {
+     "id": "answer",
+     "decision": "Server answer?"
+    },
+    {
+     "id": "wrong",
+     "title": "Sign in",
+     "sub": "Wrong email or password",
+     "note": "The message names neither field, so nobody can learn which emails have accounts.",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><div style='height:12px'></div><div style='border:1px solid var(--bad);border-radius:8px;padding:10px 12px;margin-bottom:16px;color:var(--bad)'>That email and password do not match.</div><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@example.com</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>&nbsp;</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Sign in</div></div>"
+    },
+    {
+     "id": "offline",
+     "title": "No connection",
+     "sub": "Request failed",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>No connection</h2><p style='margin:0 0 20px;color:var(--muted)'>Check your internet and try again. What you typed is kept.</p><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Try again</div></div>"
+    },
+    {
+     "id": "workspace",
+     "decision": "Has a workspace?"
+    },
+    {
+     "id": "home",
+     "title": "Home",
+     "sub": "Signed in",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Welcome back, Ana</h2><p style='margin:0 0 20px;color:var(--muted)'>You have 3 open tasks.</p><div style='border:1px solid var(--hair);border-radius:10px;padding:12px;margin-bottom:8px'>Review the March report</div><div style='border:1px solid var(--hair);border-radius:10px;padding:12px;margin-bottom:8px'>Call the supplier</div><div style='border:1px solid var(--hair);border-radius:10px;padding:12px;margin-bottom:8px'>Book the team room</div></div>"
+    },
+    {
+     "id": "setup",
+     "title": "Create a workspace",
+     "sub": "First sign-in",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Create a workspace</h2><p style='margin:0 0 20px;color:var(--muted)'>A workspace holds your team's tasks.</p><label style='display:block;font-size:14px;color:var(--muted)'>Workspace name</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>Ana's team</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Create</div></div>"
+    }
+   ],
+   "links": [
+    {
+     "from": "form",
+     "to": "email-ok",
+     "label": "Tap Sign in"
+    },
+    {
+     "from": "email-ok",
+     "to": "checking",
+     "label": "Yes"
+    },
+    {
+     "from": "email-ok",
+     "to": "bad-email",
+     "label": "No",
+     "error": true
+    },
+    {
+     "from": "bad-email",
+     "to": "email-ok",
+     "label": "Fix and tap again"
+    },
+    {
+     "from": "checking",
+     "to": "answer",
+     "label": "Reply arrives"
+    },
+    {
+     "from": "checking",
+     "to": "offline",
+     "label": "No network",
+     "error": true
+    },
+    {
+     "from": "offline",
+     "to": "checking",
+     "label": "Try again"
+    },
+    {
+     "from": "answer",
+     "to": "workspace",
+     "label": "Accepted"
+    },
+    {
+     "from": "answer",
+     "to": "wrong",
+     "label": "Rejected",
+     "error": true
+    },
+    {
+     "from": "wrong",
+     "to": "form",
+     "label": "Edit and retry"
+    },
+    {
+     "from": "workspace",
+     "to": "home",
+     "label": "Yes"
+    },
+    {
+     "from": "workspace",
+     "to": "setup",
+     "label": "No"
+    },
+    {
+     "from": "setup",
+     "to": "home",
+     "label": "Tap Create"
+    }
+   ]
+  },
+  {
+   "id": "reset-password",
+   "label": "Reset password",
+   "platform": "iOS · mock-ups",
+   "frame": "phone",
+   "start": "ask",
+   "states": [
+    {
+     "id": "ask",
+     "title": "Reset password",
+     "sub": "Ask for the email",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Reset password</h2><p style='margin:0 0 20px;color:var(--muted)'>We send a link to your email.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@example.com</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Send link</div></div>"
+    },
+    {
+     "id": "sent",
+     "title": "Check your email",
+     "sub": "Link sent",
+     "note": "The app shows this screen for every email, known or not.",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Check your email</h2><p style='margin:0 0 20px;color:var(--muted)'>If ana@example.com has an account, a link is on its way.</p><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Open mail app</div><div style='background:var(--fill);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Send again</div></div>"
+    },
+    {
+     "id": "expired",
+     "title": "Link expired",
+     "sub": "Older than 30 minutes",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>This link has expired</h2><p style='margin:0 0 20px;color:var(--muted)'>Links work for 30 minutes.</p><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Send a new link</div></div>"
+    },
+    {
+     "id": "new",
+     "title": "New password",
+     "sub": "Link is valid",
+     "html": "<div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Choose a new password</h2><div style='height:12px'></div><label style='display:block;font-size:14px;color:var(--muted)'>New password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>••••••••••</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Save</div></div>"
+    }
+   ],
+   "links": [
+    {
+     "from": "ask",
+     "to": "sent",
+     "label": "Tap Send link"
+    },
+    {
+     "from": "sent",
+     "to": "new",
+     "label": "Open link in time"
+    },
+    {
+     "from": "sent",
+     "to": "expired",
+     "label": "Open link late",
+     "error": true
+    },
+    {
+     "from": "expired",
+     "to": "ask",
+     "label": "Send a new link"
+    }
+   ]
+  }
+ ]
+}

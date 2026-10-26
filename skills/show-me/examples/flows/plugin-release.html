@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Releasing a Skill Change</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Readability floor: body 17px, nothing under 14px, text contrast 4.5:1 or more in both themes. */
+:root{
+  --paper:#f4f4f3; --ink:#1e1e1e; --muted:#555555; --line:#9b9b9b; --hair:#dddddc;
+  --badge:#e4e4e3; --badge-ink:#1e1e1e; --fill:#eaeae9;
+  --note:#2a2a2a; --note-soft:#e1e1e0; --ok:#2f6a45; --ok-soft:#e3ece6; --bad:#a3372f; --bezel:#2a2a2a;
+  --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --radius:8px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1a1a1a; --ink:#e6e6e5; --muted:#a8a8a7; --line:#5e5e5e; --hair:#2f2f2f;
+  --badge:#2b2b2b; --badge-ink:#e6e6e5; --fill:#222222;
+  --note:#f1f1f0; --note-soft:#333333; --ok:#8ec8a0; --ok-soft:#1f2c24; --bad:#ec9a92; --bezel:#4a4a4a; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#1a1a1a; --ink:#e6e6e5; --muted:#a8a8a7; --line:#5e5e5e; --hair:#2f2f2f;
+  --badge:#2b2b2b; --badge-ink:#e6e6e5; --fill:#222222;
+  --note:#f1f1f0; --note-soft:#333333; --ok:#8ec8a0; --ok-soft:#1f2c24; --bad:#ec9a92; --bezel:#4a4a4a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+code,.mono{font-family:var(--mono);font-size:.9em}
+::selection{background:var(--note-soft);color:var(--ink)}
+html{scrollbar-color:var(--line) transparent}
+a{color:var(--note);text-underline-offset:3px}
+table,.limits,.schedule,.meta{font-variant-numeric:tabular-nums}
+
+.sheet{max-width:1080px;margin:24px auto;border:1px solid var(--line);border-radius:12px;padding:0 0 28px;overflow:hidden}
+.titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:20px 28px}
+.titleblock h1{margin:0;font-size:28px;line-height:1.2;font-weight:600}
+.titleblock .meta{font:14px var(--mono);color:var(--muted)}
+
+/* The answer: read this and stop if it is enough. */
+.lead{margin:24px 28px 8px;padding:16px 20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--note-soft)}
+.lead p{margin:0 0 8px;font-size:19px;font-weight:500}
+.lead ul{margin:0;padding-left:20px}
+.lead li{margin:4px 0}
+
+/* Panels, in reading order. w6 puts two side by side on wide screens only. */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 28px 0;align-items:start}
+.panel{grid-column:span 2;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;min-width:0}
+.panel.w6{grid-column:span 1}
+.panel>header{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.panel>header .badge{background:var(--badge);color:var(--badge-ink);font-weight:600;font-size:18px;min-width:44px;display:grid;place-items:center}
+.panel>header div{padding:10px 16px}
+.panel>header h2{margin:0;font-size:19px;line-height:1.35;font-weight:600}
+.panel>header .ref{display:block;font:14px var(--mono);color:var(--muted);margin-top:2px}
+.panel .body{padding:18px 20px}
+.caption{font-size:15px;color:var(--muted);margin:14px 0 0}
+
+/* One real line with each part bracketed and named. */
+.anno{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 6px;font:17px/1.35 var(--mono)}
+.anno .seg{display:inline-flex;flex-direction:column;align-items:center;max-width:100%}
+.anno .seg>.t{overflow-wrap:anywhere;padding:0 2px}
+.anno .seg.n>.t{border:2px solid var(--note);border-top:0;padding-bottom:4px}
+.anno .seg.x>.t{color:var(--bad);border:2px solid var(--bad);border-top:0;padding-bottom:4px}
+.anno .seg>.why{font:14px/1.3 var(--sans);color:var(--note);margin-top:6px;text-align:center;max-width:22ch}
+.anno .seg.x>.why{color:var(--bad)}
+
+table{width:100%;border-collapse:collapse;font-size:16px}
+th{font:500 14px var(--sans);color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
+.ok,.bad{font-weight:500}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.ok::before,.bad::before{content:"";display:inline-block;width:.8em;height:.8em;margin-right:.35em;vertical-align:-.05em;background:currentColor;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+.ok::before{--icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.bad::before{--icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")}
+
+.limit{margin:4px 0 20px}
+.limit .lab{display:flex;justify-content:space-between;gap:12px;font-size:16px}
+.limit .lab b{font:500 15px var(--mono);color:var(--note);white-space:nowrap}
+.limit .track{height:14px;border:1px solid var(--hair);margin-top:8px;background:var(--fill)}
+.limit .track i{display:block;height:100%;background:var(--note)}
+
+.tree .root{display:inline-block;border:1px solid var(--line);background:var(--note-soft);padding:8px 16px;margin-bottom:12px}
+.tree .root small{display:block;color:var(--muted);font-size:14px}
+.tree ul{list-style:none;margin:0 0 0 14px;padding-left:20px;border-left:1px solid var(--line)}
+.tree li{position:relative;padding:6px 0}
+.tree li::before{content:"";position:absolute;left:-20px;top:20px;width:14px;border-top:1px solid var(--line)}
+.tree li small{display:block;color:var(--muted);font-size:15px}
+
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flow .box{border:1px solid var(--line);padding:8px 14px;font-size:16px}
+.flow .box.new{border:2px dashed var(--note);color:var(--note);font-weight:600}
+.flow .arrow{color:var(--muted);font-size:18px}
+
+.timeline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:7px;border-top:1px solid var(--line)}
+.timeline div{position:relative;text-align:center;color:var(--muted);font-size:15px;padding-top:24px}
+.timeline div::before{content:"";position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border:1.5px solid var(--line);border-radius:50%;background:var(--paper)}
+.timeline div b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+
+/* Mechanism diagram: inline SVG. Boxes are opaque so no line shows through; every arrow has a label. */
+figure.diagram{margin:0}
+figure.diagram .scroll{overflow-x:auto}
+figure.diagram svg{display:block;width:100%;max-width:100%;height:auto;min-width:680px;color:var(--ink)}
+figure.diagram .node{fill:var(--paper);stroke:var(--line);stroke-width:1.5}
+figure.diagram .node.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .node.store{fill:var(--fill)}
+figure.diagram .edge{fill:none;stroke:var(--muted);stroke-width:1.5}
+figure.diagram .edge.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .lbl{font:600 15px var(--sans);fill:currentColor}
+figure.diagram .sub{font:13px var(--sans);fill:var(--muted)}
+figure.diagram .elbl{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .elbl.new{fill:var(--note)}
+figure.diagram .mask{fill:var(--paper)}
+figure.diagram figcaption{font-size:15px;color:var(--muted);margin-top:10px}
+
+@media (max-width:760px){
+  .sheet{margin:0;border-width:0 0 1px;border-radius:0}
+  .titleblock,.grid{padding-left:16px;padding-right:16px}
+  .lead{margin-left:16px;margin-right:16px}
+  .grid{grid-template-columns:1fr}.panel.w6{grid-column:span 2}
+}
+
+figure.diagram .scroll,div.scroll{overflow-x:auto}
+
+/* Walkthrough: tabs for views, a guided tour of steps in each. Without JS every view shows, stacked. */
+.tabs{display:none;gap:4px;padding:16px 28px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.js .tabs{display:flex}
+.tabs button{font:500 16px var(--sans);color:var(--muted);background:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;padding:10px 16px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--line);background:var(--paper);margin-bottom:-1px}
+.tabs button:focus-visible,.tour button:focus-visible,summary:focus-visible{outline:2px solid var(--note);outline-offset:2px}
+.views{padding:20px 28px 0}
+.view{margin-bottom:32px}
+.view[hidden]{display:none}
+.vtitle{font-size:22px;margin:0 0 6px}
+.js .vtitle{display:none}
+.vsum{color:var(--muted);margin:0 0 14px;max-width:70ch}
+.tour{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.tour button{font:500 15px var(--sans);color:var(--ink);background:var(--fill);border:1px solid var(--line);padding:6px 14px;border-radius:6px;cursor:pointer}
+.tour .pos{font:14px var(--mono);color:var(--muted)}
+details.step{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;background:var(--paper)}
+details.step>summary{color:var(--ink);font-size:inherit;margin:0;display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;padding:10px 16px}
+details.step>summary::-webkit-details-marker{display:none}
+details.step>summary .num{background:var(--badge);color:var(--badge-ink);font-weight:600;min-width:30px;height:30px;display:grid;place-items:center}
+details.step>summary h3{margin:0;font-size:18px;font-weight:600}
+details.step[open]>summary{border-bottom:1px solid var(--line)}
+details.step .body{padding:16px 20px}
+details.step .body>p{margin:0 0 14px;max-width:72ch}
+
+/* path: an ordered trace through the thing */
+ol.path{list-style:none;counter-reset:p;margin:0;padding:0}
+ol.path li{counter-increment:p;position:relative;padding:8px 0 8px 40px;border-left:1px solid var(--line);margin-left:14px}
+ol.path li::before{content:counter(p);position:absolute;left:-14px;top:8px;width:26px;height:26px;border:1px solid var(--line);background:var(--paper);display:grid;place-items:center;font:500 14px var(--mono)}
+ol.path .where{display:block;font:500 14px var(--mono);color:var(--note)}
+ol.path .what{display:block}
+ol.path .passes{display:block;font-size:15px;color:var(--muted)}
+
+/* decisions: choice, what lost, why, how sure, where it says so */
+.decisions{display:grid;gap:12px}
+.decision{border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;background:var(--fill)}
+.decision .dhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.decision p{margin:8px 0 0}
+.decision .over{margin-top:6px;font-size:15px;color:var(--muted)}
+.decision .over span{font-weight:500}
+.decision .over ul{display:inline;margin:0;padding:0 0 0 6px;list-style:none}
+.decision .over li{display:inline}
+.decision .over li+li::before{content:" · "}
+.decision .src{margin-top:6px;font-size:14px;color:var(--muted)}
+.conf{font:500 14px var(--mono);padding:1px 8px;border:1px solid currentColor}
+.conf.direct,.conf.supported{color:var(--ok)}
+.conf.inferred{color:var(--note)}
+.conf.unknown{color:var(--bad)}
+
+/* code */
+pre.code{margin:0;padding:12px 14px;border-radius:6px;background:var(--fill);border:1px solid var(--hair);overflow-x:auto;font:14px/1.5 var(--mono)}
+details>summary{cursor:pointer;color:var(--note);font-size:15px;margin:6px 0}
+.body>.where{font:500 14px var(--mono);color:var(--note);margin-bottom:6px}
+
+@media (max-width:760px){.tabs,.views{padding-left:16px;padding-right:16px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+/* gaps: what we could not find */
+ul.gaps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.gaps li{border:1px dashed var(--bad);border-radius:var(--radius);padding:10px 14px}
+ul.gaps .looked,ul.gaps .ask{display:block;font-size:15px;color:var(--muted)}
+
+/* Flow: screens and decisions joined by labelled links. Click a screen to see it full size. */
+.flowpage{max-width:1500px}
+.spacer{flex:1}
+.fbar{display:flex;align-items:center;gap:12px;padding:16px 28px 0;flex-wrap:wrap}
+.fpick{font-size:15px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.fpick select,.ftheme,.zoom button,.fover button{font:500 15px var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+.flowsec{padding:0 28px}
+.js .flowsec[hidden]{display:none}
+.ftool{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 6px}
+.fname{font-size:20px;font-weight:600}
+.fplat{font:14px var(--mono);color:var(--muted);border:1px solid var(--hair);border-radius:6px;padding:1px 8px}
+.fcount{font:14px var(--mono);color:var(--ok)}
+.zoom{display:flex;align-items:center;gap:4px}
+.zoom output{font:14px var(--mono);color:var(--muted);min-width:48px;text-align:center}
+.fsum{margin:0 0 8px;color:var(--muted);max-width:80ch}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted);margin:0 0 10px}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.lg i{display:inline-block}
+.lg-screen{width:14px;height:18px;border:1px solid var(--line);border-radius:3px;background:var(--paper)}
+.lg-dec{width:20px;height:14px;border:1px solid var(--line);border-radius:7px;background:var(--fill)}
+.lg-link{width:26px;border-top:2px solid var(--muted)}
+.lg-link.error{border-color:var(--bad)}
+.lg-link.return{border-top-style:dashed}
+.fmap{overflow:auto;max-height:72vh;border:1px solid var(--hair);border-radius:var(--radius);cursor:grab;
+  background:var(--fill) radial-gradient(var(--hair) 1px,transparent 1px) 0 0/12px 12px}
+.fmap.dragging{cursor:grabbing;user-select:none}
+.fsize{position:relative}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0}
+.stage svg{position:absolute;inset:0;overflow:visible}
+.link{fill:none;stroke:var(--muted);stroke-width:1.5}
+.link.error{stroke:var(--bad)}
+.link.return{stroke-dasharray:6 5}
+.link.onpath{stroke:var(--note);stroke-width:2.5}
+.ah{fill:var(--muted)}.ah.err{fill:var(--bad)}
+.llbl rect{fill:var(--fill)}
+.llbl text{font:14px var(--sans);fill:var(--muted)}
+.llbl.error text{fill:var(--bad)}
+.llbl.onpath text{fill:var(--note);font-weight:600}
+.fnode{position:absolute;display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:var(--radius);cursor:pointer}
+.fnode:hover{background:var(--hair)}
+.fhead{display:flex;align-items:flex-start;gap:8px;height:40px}
+.ftitle{flex:1;min-width:0;font:600 14px/1.3 var(--sans);color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fsub{display:block;font-weight:400;color:var(--muted)}
+.fnode.sel .ftitle{color:var(--note)}
+.fnode.sel .thumb,.fnode.onpath .thumb{outline:2px solid var(--note);outline-offset:2px}
+.fnode.onpath .thumb{outline-style:dashed}
+.thumb{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--hair);border-radius:6px}
+.thumb.frame-phone{border-radius:18px;border:4px solid var(--bezel)}
+.thumb.frame-browser,.foscreen.frame-browser{--bar:12px;padding-top:var(--bar);background:
+  radial-gradient(circle at 8px 50%,var(--line) 2px,transparent 2.5px) 0 0/100% var(--bar) no-repeat,
+  radial-gradient(circle at 16px 50%,var(--line) 2px,transparent 2.5px) 0 0/100% var(--bar) no-repeat,
+  linear-gradient(var(--hair),var(--hair)) 0 0/100% var(--bar) no-repeat,var(--paper)}
+.thumb .scale{transform-origin:0 0;pointer-events:none}
+.reviewed .thumb .scale{opacity:.4}
+.reviewed .thumb::after{content:"";position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
+  background:var(--ok);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cmask id='m'%3E%3Ccircle cx='12' cy='12' r='12' fill='white'/%3E%3Cpath d='M7 12.4l3.3 3.3L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='12' cy='12' r='12' fill='white' mask='url(%23m)'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cmask id='m'%3E%3Ccircle cx='12' cy='12' r='12' fill='white'/%3E%3Cpath d='M7 12.4l3.3 3.3L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='12' cy='12' r='12' fill='white' mask='url(%23m)'/%3E%3C/svg%3E") center/contain no-repeat}
+.fdec{position:absolute;display:grid;place-items:center;text-align:center;padding:6px 14px;font:500 14px/1.3 var(--sans);color:var(--ink);
+  background:var(--paper);border:1.5px solid var(--line);border-radius:20px;cursor:pointer}
+.fdec:hover{background:var(--hair)}
+.fdec.sel,.fdec.onpath{border-color:var(--note)}
+.fdec.sel{color:var(--note);font-weight:600}
+input.review{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ok);cursor:pointer;flex:none}
+.foutline{margin:12px 0 0}
+.foutline summary{font-size:15px}
+.foutline ul{list-style:none;margin:8px 0 0;padding:0;columns:3 220px;gap:24px}
+.foutline li{display:flex;align-items:center;gap:8px;padding:3px 0;break-inside:avoid}
+.foutline button{all:unset;cursor:pointer;flex:1;font-size:15px;line-height:1.35;color:var(--ink)}
+.foutline button:hover{color:var(--note)}
+.fover{width:min(960px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0 0 20px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink)}
+.fover::backdrop{background:rgba(20,20,20,.55)}
+.fobar{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--paper);border-bottom:1px solid var(--hair)}
+.fobar h2{margin:0;font-size:20px;line-height:1.3}
+.fosub,.fonote,.foin,.foout{margin:10px 20px 0}
+.fosub{color:var(--muted);font-size:15px}
+.fosub:empty,.fonote:empty,.foin:empty{display:none}
+.foin{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px;color:var(--muted)}
+.foin button,.foout button.plain{background:var(--fill)}
+.fostage{margin:14px 20px 0;padding:20px;border:1px solid var(--hair);border-radius:12px;
+  background:var(--fill) radial-gradient(var(--hair) 1px,transparent 1px) 0 0/12px 12px}
+.foscreen{margin:0 auto;background:var(--paper);overflow:hidden}
+.foscreen.frame-phone{border:8px solid var(--bezel);border-radius:36px}
+.foscreen.frame-browser{--bar:22px;border:1px solid var(--hair);border-radius:8px}
+.foscreen.decision{background:none;text-align:center}
+.foscreen.decision p{display:inline-block;margin:0;padding:18px 28px;font-size:20px;border:1.5px solid var(--line);border-radius:24px;background:var(--paper)}
+.foout{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fover button.fwd{border-color:var(--note);color:var(--note)}
+.fover button.error{border-color:var(--bad);color:var(--bad)}
+.fnode:focus-visible,.fdec:focus-visible,.fover button:focus-visible,.zoom button:focus-visible,.ftheme:focus-visible,input.review:focus-visible,.foutline button:focus-visible{outline:2px solid var(--note);outline-offset:2px}
+@media (max-width:760px){.fbar,.flowsec{padding-left:16px;padding-right:16px}.fmap{max-height:60vh}.fover{width:100vw;max-height:100vh;border-radius:0}}
+
+/* sequence, schema, schedule: more drawn exhibits; same colour meanings as the diagram */
+figure.diagram .life{stroke:var(--hair);stroke-width:1.5;stroke-dasharray:4 4}
+figure.diagram .edge.reply{stroke-dasharray:5 4}
+figure.diagram .edge.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .edge.bad{stroke:var(--bad)}
+figure.diagram .elbl.bad{fill:var(--bad)}
+figure.diagram .thead{fill:var(--fill);stroke:var(--line);stroke-width:1}
+figure.diagram .trow{stroke:var(--hair)}
+figure.diagram .cname{font:14px var(--mono);fill:var(--ink)}
+figure.diagram .cname.key{font-weight:500;fill:var(--note)}
+figure.diagram .ctype{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .grid{stroke:var(--hair)}
+figure.diagram .rlbl{font:14px var(--sans);fill:var(--ink)}
+figure.diagram .bar{fill:var(--muted);opacity:.55}
+figure.diagram .bar.done{fill:var(--ok);opacity:1}
+figure.diagram .bar.late{fill:var(--bad);opacity:1}
+figure.diagram .bar.new{fill:var(--note-soft);stroke:var(--note);stroke-dasharray:5 3;opacity:1}
+figure.diagram .today{stroke:var(--note);stroke-width:1.5}
+
+</style>
+</head>
+<body>
+<div class="sheet flowpage">
+<div class="titleblock"><h1>Releasing a Skill Change</h1><span class="meta">flow without screens · each state is a code block or a table · onmywatch 0.31.0</span></div>
+<div class="lead"><p>A skill change reaches users only after a version bump, a sync, a commit and a push.</p><ul><li>Commit hooks always run. Fix what they find; never skip them.</li><li>The agent cannot push to <code>main</code>, so you run the push yourself.</li></ul></div>
+<div class="fbar"><span class="spacer"></span><button type="button" class="ftheme" aria-pressed="false">Dark</button></div><div class="flows"><section class="flowsec" data-flow="0" data-frame="none" data-width="400"><div class="ftool"><span class="fname">Release a skill change</span><span class="fplat">git · Claude Code</span><span class="fcount" aria-live="polite"></span><span class="spacer"></span><span class="zoom"><button type="button" data-zoom="-1" aria-label="Zoom out">−</button><output>100%</output><button type="button" data-zoom="1" aria-label="Zoom in">+</button><button type="button" data-zoom="fit">Fit to screen</button></span></div><p class="fsum">The steps that took onmywatch from 0.30.1 to 0.31.0.</p><div class="legend"><span class="lg"><i class="lg-screen"></i>Screen</span><span class="lg"><i class="lg-dec"></i>Decision</span><span class="lg"><i class="lg-link"></i>User action or answer</span><span class="lg"><i class="lg-link error"></i>Error path</span><span class="lg"><i class="lg-link return"></i>Goes back</span></div><div class="fmap" tabindex="-1"><div class="fsize" style="width:3494px;height:648px"><div class="stage" style="width:3494px;height:648px"><svg width="3494" height="648" aria-hidden="true"><defs><marker id="fa-0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="fa-0-err" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah err"/></marker></defs><path class="link " data-from="edit" data-to="bump" d="M282,221 L452,221" marker-end="url(#fa-0)"/><path class="link " data-from="bump" data-to="sync" d="M694,221 L864,221" marker-end="url(#fa-0)"/><path class="link " data-from="sync" data-to="commit" d="M1106,221 L1248,221 L1248,210 L1276,210" marker-end="url(#fa-0)"/><path class="link " data-from="commit" data-to="hooks" d="M1518,221 L1688,221" marker-end="url(#fa-0)"/><path class="link error" data-from="hooks" data-to="fix" d="M1868,232 L2010,232 L2010,491 L2038,491" marker-end="url(#fa-0-err)"/><path class="link return" data-from="fix" data-to="commit" d="M2280,491 L2304,491 L2304,62 L1230,62 L1230,232 L1276,232" marker-end="url(#fa-0)"/><path class="link " data-from="hooks" data-to="push" d="M1868,210 L1988,210 L1988,221 L2038,221" marker-end="url(#fa-0)"/><path class="link " data-from="push" data-to="allowed" d="M2280,221 L2450,221" marker-end="url(#fa-0)"/><path class="link error" data-from="allowed" data-to="you" d="M2630,210 L2772,210 L2772,221 L2800,221" marker-end="url(#fa-0-err)"/><path class="link " data-from="allowed" data-to="live" d="M2630,232 L2658,232 L2658,40 L3184,40 L3184,210 L3212,210" marker-end="url(#fa-0)"/><path class="link " data-from="you" data-to="live" d="M3042,221 L3162,221 L3162,232 L3212,232" marker-end="url(#fa-0)"/><g class="llbl " data-from="edit" data-to="bump"><rect x="307" y="198" width="120.39999999999999" height="19" rx="4"/><text x="314" y="211">Examples build</text></g><g class="llbl " data-from="bump" data-to="sync"><rect x="730" y="198" width="97.6" height="19" rx="4"/><text x="737" y="211">New version</text></g><g class="llbl " data-from="sync" data-to="commit"><rect x="1117" y="198" width="120.39999999999999" height="19" rx="4"/><text x="1124" y="211">--check passes</text></g><g class="llbl " data-from="commit" data-to="hooks"><rect x="1562" y="198" width="82.39999999999999" height="19" rx="4"/><text x="1569" y="211">Hooks run</text></g><g class="llbl error" data-from="hooks" data-to="fix"><rect x="1924" y="209" width="29.2" height="19" rx="4"/><text x="1931" y="222">No</text></g><g class="llbl return" data-from="fix" data-to="commit"><rect x="1714" y="39" width="105.19999999999999" height="19" rx="4"/><text x="1721" y="52">Commit again</text></g><g class="llbl " data-from="hooks" data-to="push"><rect x="1910" y="187" width="36.8" height="19" rx="4"/><text x="1917" y="200">Yes</text></g><g class="llbl " data-from="push" data-to="allowed"><rect x="2312" y="198" width="105.19999999999999" height="19" rx="4"/><text x="2319" y="211">Policy check</text></g><g class="llbl error" data-from="allowed" data-to="you"><rect x="2656" y="187" width="90.0" height="19" rx="4"/><text x="2663" y="200">No: denied</text></g><g class="llbl " data-from="allowed" data-to="live"><rect x="2903" y="17" width="36.8" height="19" rx="4"/><text x="2910" y="30">Yes</text></g><g class="llbl " data-from="you" data-to="live"><rect x="3057" y="198" width="90.0" height="19" rx="4"/><text x="3064" y="211">main moves</text></g></svg><div class="fnode" data-id="edit" tabindex="0" role="button" aria-label="Open Change the skill" style="left:40px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="Change the skill">Change the skill<span class="fsub">skills/&lt;name&gt;/</span></span><input type="checkbox" class="review" data-review="edit" aria-label="Reviewed: Change the skill"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="where">terminal</div><pre class="code"><code>python3 skills/show-me/scripts/build.py \
+  skills/show-me/examples/flows/sign-in-flow.json</code></pre></div></div></div></div><div class="fnode" data-id="bump" tabindex="0" role="button" aria-label="Open Bump the version" style="left:452px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="Bump the version">Bump the version<span class="fsub">.claude-plugin/plugin.json</span></span><input type="checkbox" class="review" data-review="bump" aria-label="Reviewed: Bump the version"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="where">.claude-plugin/plugin.json</div><pre class="code"><code>&quot;version&quot;: &quot;0.31.0&quot;</code></pre></div></div></div></div><div class="fnode" data-id="sync" tabindex="0" role="button" aria-label="Open Sync the other hosts" style="left:864px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="Sync the other hosts">Sync the other hosts<span class="fsub">scripts/sync-hosts.py</span></span><input type="checkbox" class="review" data-review="sync" aria-label="Reviewed: Sync the other hosts"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="where">terminal</div><pre class="code"><code>python3 scripts/sync-hosts.py
+python3 scripts/sync-hosts.py --check</code></pre></div></div></div></div><div class="fnode" data-id="commit" tabindex="0" role="button" aria-label="Open Commit with hooks on" style="left:1276px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="Commit with hooks on">Commit with hooks on<span class="fsub">git commit</span></span><input type="checkbox" class="review" data-review="commit" aria-label="Reviewed: Commit with hooks on"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="where">terminal</div><pre class="code"><code>git add -A
+git commit -m &quot;show-me: ...&quot;</code></pre></div></div></div></div><button type="button" class="fdec" data-id="hooks" style="left:1688px;top:185px;width:180px;height:72px">Hooks pass?</button><div class="fnode" data-id="fix" tabindex="0" role="button" aria-label="Open Fix the cause" style="left:2038px;top:374px;width:242px"><div class="fhead"><span class="ftitle" title="Fix the cause">Fix the cause<span class="fsub">Never --no-verify</span></span><input type="checkbox" class="review" data-review="fix" aria-label="Reviewed: Fix the cause"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="scroll"><table><tr><th>Do</th><th>Never</th></tr><tr><td class="ok">Fix the code</td><td class="bad">--no-verify</td></tr><tr><td class="ok">Amend with hooks on</td><td class="bad">core.hooksPath=/dev/null</td></tr></table></div></div></div></div></div><div class="fnode" data-id="push" tabindex="0" role="button" aria-label="Open Push to main" style="left:2038px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="Push to main">Push to main<span class="fsub">The agent asks</span></span><input type="checkbox" class="review" data-review="push" aria-label="Reviewed: Push to main"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="where">terminal</div><pre class="code"><code>git push origin main</code></pre></div></div></div></div><button type="button" class="fdec" data-id="allowed" style="left:2450px;top:185px;width:180px;height:72px">Agent may push?</button><div class="fnode" data-id="you" tabindex="0" role="button" aria-label="Open You push" style="left:2800px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="You push">You push<span class="fsub">! prefix</span></span><input type="checkbox" class="review" data-review="you" aria-label="Reviewed: You push"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="where">Claude Code prompt</div><pre class="code"><code>! git push origin main</code></pre></div></div></div></div><div class="fnode" data-id="live" tabindex="0" role="button" aria-label="Open Users update" style="left:3212px;top:104px;width:242px"><div class="fhead"><span class="ftitle" title="Users update">Users update<span class="fsub">On each host</span></span><input type="checkbox" class="review" data-review="live" aria-label="Reviewed: Users update"></div><div class="thumb frame-none" style="width:230px;height:170px"><div class="scale" inert style="width:400px;transform:scale(0.5750)"><div class="body"><div class="scroll"><table><tr><th>Host</th><th>Gets 0.31.0</th></tr><tr><td>Claude Code, auto-update on</td><td class="ok">Next start</td></tr><tr><td>Claude Code, auto-update off</td><td class="ok">After /plugin update</td></tr><tr><td>Codex</td><td class="ok">After marketplace upgrade</td></tr></table></div></div></div></div></div></div></div></div><details class="foutline"><summary>All screens, in path order</summary><ul><li><button type="button" data-open="edit">Change the skill</button><input type="checkbox" class="review" data-review="edit" aria-label="Reviewed: Change the skill"></li><li><button type="button" data-open="bump">Bump the version</button><input type="checkbox" class="review" data-review="bump" aria-label="Reviewed: Bump the version"></li><li><button type="button" data-open="sync">Sync the other hosts</button><input type="checkbox" class="review" data-review="sync" aria-label="Reviewed: Sync the other hosts"></li><li><button type="button" data-open="commit">Commit with hooks on</button><input type="checkbox" class="review" data-review="commit" aria-label="Reviewed: Commit with hooks on"></li><li><button type="button" data-open="fix">Fix the cause</button><input type="checkbox" class="review" data-review="fix" aria-label="Reviewed: Fix the cause"></li><li><button type="button" data-open="push">Push to main</button><input type="checkbox" class="review" data-review="push" aria-label="Reviewed: Push to main"></li><li><button type="button" data-open="you">You push</button><input type="checkbox" class="review" data-review="you" aria-label="Reviewed: You push"></li><li><button type="button" data-open="live">Users update</button><input type="checkbox" class="review" data-review="live" aria-label="Reviewed: Users update"></li></ul></details><script type="application/json" class="fdata">{"id": "plugin-release", "start": "edit", "states": {"edit": {"title": "Change the skill", "decision": false, "note": "Build the examples again if the change touches show-me.", "sub": "skills/<name>/", "fp": "d525253458e3"}, "bump": {"title": "Bump the version", "decision": false, "note": "", "sub": ".claude-plugin/plugin.json", "fp": "4adb72c1ce5a"}, "sync": {"title": "Sync the other hosts", "decision": false, "note": "Copies the version to the Codex and Cursor manifests and marks user-only skills for Codex.", "sub": "scripts/sync-hosts.py", "fp": "fc48a41f6da3"}, "commit": {"title": "Commit with hooks on", "decision": false, "note": "", "sub": "git commit", "fp": "cb8097c4c8e7"}, "hooks": {"title": "Hooks pass?", "decision": true, "note": "", "sub": "", "fp": "c0a7b00d58e4"}, "fix": {"title": "Fix the cause", "decision": false, "note": "Fix what the hook found, then commit again with hooks on.", "sub": "Never --no-verify", "fp": "22581a1c1058"}, "push": {"title": "Push to main", "decision": false, "note": "", "sub": "The agent asks", "fp": "034db594730f"}, "allowed": {"title": "Agent may push?", "decision": true, "note": "", "sub": "", "fp": "421d9c3f5518"}, "you": {"title": "You push", "decision": false, "note": "A deny rule blocks the agent. The ! prefix runs the command in your own session.", "sub": "! prefix", "fp": "26eed06884ab"}, "live": {"title": "Users update", "decision": false, "note": "", "sub": "On each host", "fp": "4f0c9b221920"}}, "links": [{"from": "edit", "to": "bump", "label": "Examples build", "error": false, "back": false}, {"from": "bump", "to": "sync", "label": "New version", "error": false, "back": false}, {"from": "sync", "to": "commit", "label": "--check passes", "error": false, "back": false}, {"from": "commit", "to": "hooks", "label": "Hooks run", "error": false, "back": false}, {"from": "hooks", "to": "fix", "label": "No", "error": true, "back": false}, {"from": "fix", "to": "commit", "label": "Commit again", "error": false, "back": true}, {"from": "hooks", "to": "push", "label": "Yes", "error": false, "back": false}, {"from": "push", "to": "allowed", "label": "Policy check", "error": false, "back": false}, {"from": "allowed", "to": "you", "label": "No: denied", "error": true, "back": false}, {"from": "allowed", "to": "live", "label": "Yes", "error": false, "back": false}, {"from": "you", "to": "live", "label": "main moves", "error": false, "back": false}]}</script></section></div><dialog class="fover" aria-labelledby="fover-title"><div class="fobar"><h2 id="fover-title"></h2><input type="checkbox" class="review" aria-label="Reviewed"><span class="spacer"></span><button type="button" class="ftheme" aria-pressed="false">Dark</button><button type="button" class="fclose">Close</button></div><p class="fosub"></p><p class="fonote"></p><div class="foin"></div><div class="foout"></div><div class="fostage"><div class="foscreen"></div></div></dialog>
+</div>
+<script type="application/json" id="flow-images">{}</script><script>(() => {
+  const root = document.documentElement;
+  root.classList.add('js');
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+    set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (_) {} },
+  };
+
+  // Each screenshot is stored once and shared by every place that shows it.
+  const images = JSON.parse(document.getElementById('flow-images').textContent);
+  const fillImages = (el) => el.querySelectorAll('img[data-img]').forEach((img) => { img.src = images[img.dataset.img]; });
+  fillImages(document);
+
+  // Theme: the button names the theme it switches to.
+  const themeButtons = [...document.querySelectorAll('.ftheme')];
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const paintTheme = () => themeButtons.forEach((b) => { b.textContent = isDark() ? 'Light' : 'Dark'; b.setAttribute('aria-pressed', isDark()); });
+  if (store.get('show-me-theme')) root.dataset.theme = store.get('show-me-theme');
+  paintTheme();
+  themeButtons.forEach((b) => b.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    store.set('show-me-theme', root.dataset.theme);
+    paintTheme();
+  }));
+
+  const dlg = document.querySelector('.fover');
+  const overlayCheck = dlg.querySelector('.fobar .review');
+  let open = null;
+  const back = [];
+
+  const sections = [...document.querySelectorAll('.flowsec')];
+  const flows = sections.map((sec) => {
+    const data = JSON.parse(sec.querySelector('.fdata').textContent);
+    const map = sec.querySelector('.fmap'), size = sec.querySelector('.fsize'), stage = sec.querySelector('.stage');
+    const W = parseFloat(stage.style.width), H = parseFloat(stage.style.height);
+    const f = { sec, data, map, size, stage, W, H, zoom: 1 };
+    f.key = (id) => 'show-me-flow:' + data.id + ':' + id;
+    f.reviewed = (id) => store.get(f.key(id)) === data.states[id].fp;
+    return f;
+  });
+
+  // ---------- review marks ----------
+  function paintReviews(f) {
+    const screens = Object.keys(f.data.states).filter((id) => !f.data.states[id].decision);
+    let done = 0;
+    screens.forEach((id) => {
+      const on = f.reviewed(id);
+      if (on) done++;
+      f.sec.querySelectorAll('[data-review="' + CSS.escape(id) + '"]').forEach((c) => { c.checked = on; });
+      f.sec.querySelectorAll('.fnode[data-id="' + CSS.escape(id) + '"]').forEach((n) => n.classList.toggle('reviewed', on));
+    });
+    f.sec.querySelector('.fcount').textContent = 'Reviewed ' + done + ' / ' + screens.length;
+    if (open && open.f === f && !f.data.states[open.id].decision) overlayCheck.checked = f.reviewed(open.id);
+  }
+  function setReview(f, id, on) { store.set(f.key(id), on ? f.data.states[id].fp : null); paintReviews(f); }
+
+  // ---------- zoom and pan ----------
+  function setZoom(f, z, ax, ay) {
+    z = Math.max(0.2, Math.min(2, z));
+    const m = f.map, px = ax ?? m.clientWidth / 2, py = ay ?? m.clientHeight / 2;
+    const cx = (m.scrollLeft + px) / f.zoom, cy = (m.scrollTop + py) / f.zoom;
+    f.zoom = z;
+    f.stage.style.transform = 'scale(' + z + ')';
+    f.size.style.width = f.W * z + 'px';
+    f.size.style.height = f.H * z + 'px';
+    m.scrollLeft = cx * z - px;
+    m.scrollTop = cy * z - py;
+    f.sec.querySelector('.zoom output').textContent = Math.round(z * 100) + '%';
+  }
+  const fitZoom = (f) => Math.min(1, (f.map.clientWidth - 4) / f.W, (innerHeight * 0.72) / f.H);
+
+  flows.forEach((f) => {
+    f.sec.querySelectorAll('[data-zoom]').forEach((b) => b.addEventListener('click', () => {
+      const v = b.dataset.zoom;
+      setZoom(f, v === 'fit' ? fitZoom(f) : Math.round((f.zoom + v * 0.1) * 10) / 10);
+    }));
+    f.map.addEventListener('wheel', (ev) => {
+      if (!ev.ctrlKey && !ev.metaKey) return;
+      ev.preventDefault();
+      const r = f.map.getBoundingClientRect();
+      setZoom(f, f.zoom * (ev.deltaY < 0 ? 1.1 : 0.9), ev.clientX - r.left, ev.clientY - r.top);
+    }, { passive: false });
+    let drag = null;
+    f.map.addEventListener('pointerdown', (ev) => {
+      if (ev.target.closest('.fnode,.fdec,button,input') || ev.button !== 0) return;
+      drag = { x: ev.clientX, y: ev.clientY, l: f.map.scrollLeft, t: f.map.scrollTop };
+      f.map.setPointerCapture(ev.pointerId);
+      f.map.classList.add('dragging');
+    });
+    f.map.addEventListener('pointermove', (ev) => {
+      if (!drag) return;
+      f.map.scrollLeft = drag.l - (ev.clientX - drag.x);
+      f.map.scrollTop = drag.t - (ev.clientY - drag.y);
+    });
+    const stop = () => { drag = null; f.map.classList.remove('dragging'); };
+    f.map.addEventListener('pointerup', stop);
+    f.map.addEventListener('pointercancel', stop);
+    f.sec.addEventListener('change', (ev) => {
+      const c = ev.target.closest('[data-review]');
+      if (c) setReview(f, c.dataset.review, c.checked);
+    });
+    f.sec.addEventListener('click', (ev) => {
+      if (ev.target.closest('input')) return;
+      const t = ev.target.closest('.fnode,.fdec,[data-open]');
+      if (t) openState(f, t.dataset.id || t.dataset.open);
+    });
+    f.sec.addEventListener('keydown', (ev) => {
+      const n = ev.target.closest('.fnode');
+      if (n && !ev.target.closest('input') && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openState(f, n.dataset.id); }
+    });
+    paintReviews(f);
+  });
+
+  // ---------- picker ----------
+  const picker = document.querySelector('.fpick select');
+  let current = flows[0];
+  function showFlow(i) {
+    current = flows[i];
+    flows.forEach((f, j) => { f.sec.hidden = j !== i; });
+    if (picker) picker.value = String(i);
+    if (!current.fitted) { current.fitted = true; setZoom(current, current.W > current.map.clientWidth ? Math.max(0.4, fitZoom(current)) : 1, 0, 0); }
+  }
+  if (picker) picker.addEventListener('change', () => showFlow(Number(picker.value)));
+
+  // ---------- path from the start ----------
+  function pathTo(f, id) {
+    const prev = { [f.data.start]: null }, queue = [f.data.start];
+    while (queue.length) {
+      const v = queue.shift();
+      if (v === id) break;
+      f.data.links.forEach((l, n) => { if (l.from === v && !(l.to in prev)) { prev[l.to] = n; queue.push(l.to); } });
+    }
+    const used = new Set();
+    for (let v = id; prev[v] != null; v = f.data.links[prev[v]].from) used.add(prev[v]);
+    return used;
+  }
+  function paintPath(f, id) {
+    const used = pathTo(f, id), steps = new Set([id]);
+    used.forEach((n) => { steps.add(f.data.links[n].from); });
+    const linkEls = [...f.sec.querySelectorAll('.link')], labelEls = [...f.sec.querySelectorAll('.llbl')];
+    linkEls.forEach((el, n) => el.classList.toggle('onpath', used.has(n)));
+    labelEls.forEach((el, n) => el.classList.toggle('onpath', used.has(n)));
+    f.sec.querySelectorAll('.fnode,.fdec').forEach((el) => {
+      el.classList.toggle('sel', el.dataset.id === id);
+      el.classList.toggle('onpath', steps.has(el.dataset.id) && el.dataset.id !== id);
+    });
+  }
+
+  // ---------- full-size view ----------
+  const button = (f, id, text, cls) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = cls || '';
+    b.textContent = text;
+    b.addEventListener('click', () => openState(f, id, 'step'));
+    return b;
+  };
+  // how: 'map' starts a new trail, 'step' adds to it, 'back' walks it back.
+  function openState(f, id, how = 'map') {
+    const s = f.data.states[id];
+    if (!s) return;
+    if (how === 'step' && open) back.push(open.id);
+    if (how === 'map') back.length = 0;
+    open = { f, id };
+    dlg.querySelector('h2').textContent = s.decision ? 'Decision: ' + s.title : s.title;
+    dlg.querySelector('.fosub').textContent = s.sub;
+    dlg.querySelector('.fonote').textContent = s.note;
+    overlayCheck.hidden = s.decision;
+    overlayCheck.dataset.review = id;
+    overlayCheck.checked = !s.decision && f.reviewed(id);
+    overlayCheck.setAttribute('aria-label', 'Reviewed: ' + s.title);
+
+    const inn = dlg.querySelector('.foin');
+    inn.replaceChildren();
+    const incoming = f.data.links.filter((l) => l.to === id);
+    if (incoming.length) {
+      const lab = document.createElement('span');
+      lab.textContent = 'Comes from';
+      inn.append(lab);
+      incoming.forEach((l) => inn.append(button(f, l.from, '← ' + f.data.states[l.from].title + ' · ' + l.label, l.error ? 'error' : '')));
+    }
+
+    const box = dlg.querySelector('.foscreen');
+    const frame = f.sec.dataset.frame;
+    box.className = 'foscreen ' + (s.decision ? 'decision' : 'frame-' + frame);
+    box.style.maxWidth = s.decision ? '' : f.sec.dataset.width + 'px';
+    box.replaceChildren();
+    if (s.decision) {
+      const q = document.createElement('p');
+      q.textContent = s.title;
+      box.append(q);
+    } else {
+      const src = f.sec.querySelector('.fnode[data-id="' + CSS.escape(id) + '"] .scale');
+      box.innerHTML = src.innerHTML;
+      fillImages(box);
+    }
+
+    const out = dlg.querySelector('.foout');
+    out.replaceChildren();
+    if (back.length) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'plain';
+      b.textContent = '← Back to ' + f.data.states[back[back.length - 1]].title;
+      b.addEventListener('click', () => openState(f, back.pop(), 'back'));
+      out.append(b);
+    }
+    const spacer = document.createElement('span');
+    spacer.className = 'spacer';
+    out.append(spacer);
+    f.data.links.filter((l) => l.from === id).forEach((l) => {
+      const b = button(f, l.to, l.label + ' → ' + f.data.states[l.to].title, 'fwd' + (l.error ? ' error' : ''));
+      out.append(b);
+    });
+    paintPath(f, id);
+    if (!dlg.open) dlg.showModal();
+    dlg.scrollTop = 0;
+    try { history.replaceState(null, '', '#' + encodeURIComponent(f.data.id) + '/' + encodeURIComponent(id)); } catch (_) {}
+  }
+  overlayCheck.addEventListener('change', () => setReview(open.f, open.id, overlayCheck.checked));
+  dlg.querySelector('.fclose').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (ev) => { if (ev.target === dlg) dlg.close(); });
+  dlg.addEventListener('close', () => {
+    const node = open && open.f.sec.querySelector('[data-id="' + CSS.escape(open.id) + '"]');
+    if (node) { node.scrollIntoView({ block: 'nearest', inline: 'nearest' }); node.focus({ preventScroll: true }); }
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {}
+  });
+  dlg.addEventListener('keydown', (ev) => {
+    if (ev.target.closest('input,select')) return;
+    if (ev.key === 'ArrowRight') { const b = dlg.querySelector('.foout .fwd'); if (b) b.click(); }
+    if (ev.key === 'ArrowLeft') { const b = dlg.querySelector('.foout .plain'); if (b) b.click(); }
+  });
+
+  document.addEventListener('keydown', (ev) => {
+    if (dlg.open || ev.target.closest('input,select,textarea')) return;
+    if (ev.key === '+' || ev.key === '=') setZoom(current, current.zoom + 0.1);
+    if (ev.key === '-') setZoom(current, current.zoom - 0.1);
+    if (ev.key === '0') setZoom(current, fitZoom(current));
+  });
+
+  // #flow-id/state-id opens that state.
+  const [hf, hs] = location.hash.slice(1).split('/').map(decodeURIComponent);
+  const start = Math.max(0, flows.findIndex((f) => f.data.id === hf));
+  showFlow(start);
+  if (hs && flows[start].data.states[hs]) openState(flows[start], hs);
+})();
+</script>
+</body>
+</html>

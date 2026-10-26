@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      { "command": "bash \"${CURSOR_PLUGIN_ROOT:-.}/hooks/always-on.sh\" --json" }
+    ]
+  }
+}

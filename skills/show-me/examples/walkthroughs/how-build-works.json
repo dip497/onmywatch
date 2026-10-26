@@ -1,0 +1,185 @@
+{
+  "title": "How build.py Makes a Page",
+  "meta": "walkthrough · skills/show-me/scripts · 0.31.0",
+  "lead": {
+    "answer": "You write a small JSON file; build.py turns it into one checked HTML page.",
+    "points": [
+      "The top-level key picks the page: `panels`, `views` or `flows`.",
+      "Every page goes through check.py, and an ERROR stops the hand-over.",
+      "Flow pages have their own module, flow.py, because they need layout."
+    ]
+  },
+  "views": [
+    {
+      "label": "Build",
+      "summary": "What happens when you run `python3 scripts/build.py page.json`.",
+      "steps": [
+        {
+          "title": "The builder reads the spec and picks the page kind.",
+          "body": "One key in the spec decides the layout. No other setting does.",
+          "path": [
+            {
+              "where": "`build.py:316`",
+              "what": "Reads the JSON file.",
+              "passes": "the spec"
+            },
+            {
+              "where": "`build.py:321`",
+              "what": "`views` makes a walkthrough with tabs.",
+              "passes": "tab and step HTML"
+            },
+            {
+              "where": "`build.py:326`",
+              "what": "`flows` hands the spec to `flow.py`.",
+              "passes": "map, full-size view, script"
+            },
+            {
+              "where": "`build.py:330`",
+              "what": "Anything else is a sheet of lettered `panels`.",
+              "passes": "panel HTML"
+            }
+          ]
+        },
+        {
+          "title": "Each panel or step holds exactly one exhibit.",
+          "body": "The exhibit key names the drawing. Two keys in one panel stop the build.",
+          "code": {
+            "where": "build.py:257",
+            "text": "def exhibit(item, claim, where, required=True):\n    kinds = [k for k in EXHIBITS if k in item]\n    if len(kinds) > 1 or (required and not kinds):\n        sys.exit(f\"{where}: needs exactly one of ...\")"
+          }
+        },
+        {
+          "title": "The builder inlines the CSS and writes one file.",
+          "body": "The page needs no other file. Fonts come from Google Fonts; without them the system font shows.",
+          "path": [
+            {
+              "where": "`build.py:333`",
+              "what": "Reads `assets/sheet.css` and puts it in a style tag.",
+              "passes": "the page text"
+            },
+            {
+              "where": "`build.py:360`",
+              "what": "Writes `page.html` next to the JSON.",
+              "passes": "the file path"
+            },
+            {
+              "where": "`build.py:364`",
+              "what": "Runs `check.py` and exits with its code.",
+              "passes": "OK, or ERROR lines"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Checks",
+      "summary": "What `check.py` refuses, and what it only warns about.",
+      "steps": [
+        {
+          "title": "Four problems stop the page.",
+          "table": {
+            "head": [
+              "Check",
+              "Rule",
+              "Where"
+            ],
+            "rows": [
+              [
+                "Contrast",
+                "bad: under 4.5:1 in light or dark",
+                "`check.py:119`"
+              ],
+              [
+                "Text size",
+                "bad: under 14 px (13 px in diagrams)",
+                "`check.py:126`"
+              ],
+              [
+                "Panel count",
+                "bad: not 1 to 6 on a sheet",
+                "`check.py:136`"
+              ],
+              [
+                "Lead",
+                "bad: no answer block",
+                "`check.py:164`"
+              ]
+            ]
+          }
+        },
+        {
+          "title": "Style problems only warn.",
+          "body": "A warning prints a line and the page still builds. Fix it before you hand the page over.",
+          "table": {
+            "head": [
+              "Warning",
+              "Limit"
+            ],
+            "rows": [
+              [
+                "Panel title reads as a label",
+                "make it a sentence"
+              ],
+              [
+                "Long sentence",
+                "25 words"
+              ],
+              [
+                "Long sheet",
+                "450 words"
+              ],
+              [
+                "Arrow without a label",
+                "label every arrow"
+              ],
+              [
+                "Word to replace",
+                "`utilize`, `leverage`, `ensure` and 7 more"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Why",
+      "summary": "The choices behind the builder.",
+      "steps": [
+        {
+          "title": "Authors write data, not HTML.",
+          "decisions": [
+            {
+              "choice": "A JSON spec plus premade CSS",
+              "over": [
+                "Hand-written HTML per page"
+              ],
+              "why": "The same checks and both themes apply to every page.",
+              "confidence": "direct",
+              "source": "skills/show-me/SKILL.md, Level 4"
+            },
+            {
+              "choice": "Flow layout in Python at build time",
+              "over": [
+                "Graphviz dot",
+                "dagre in the browser"
+              ],
+              "why": "No install, and the build can count crossings before hand-over.",
+              "confidence": "direct",
+              "source": "commit 6a1e74f"
+            }
+          ]
+        },
+        {
+          "title": "Some limits are not measured yet.",
+          "gaps": [
+            {
+              "question": "How large can a flow be before the map is hard to read?",
+              "looked": "Only examples of up to 14 boxes",
+              "ask": "Build one real 40-box flow"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

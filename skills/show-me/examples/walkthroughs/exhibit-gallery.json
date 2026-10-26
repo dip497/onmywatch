@@ -1,0 +1,471 @@
+{
+ "title": "show-me Exhibit Gallery",
+ "meta": "all 14 exhibits · facts from onmywatch 0.31.0",
+ "lead": {
+  "answer": "Each step shows one exhibit with its JSON key, drawn from real onmywatch facts.",
+  "points": [
+   "Tabs group the exhibits by the question they answer.",
+   "Copy one step from `walkthroughs/exhibit-gallery.json` to start your own."
+  ]
+ },
+ "views": [
+  {
+   "label": "Structure",
+   "summary": "What the parts are and how they connect.",
+   "steps": [
+    {
+     "title": "`tree` shows what each folder owns.",
+     "body": "Use it for ownership: one line per folder.",
+     "tree": {
+      "root": "`skills/show-me/`",
+      "sub": "the show-me skill",
+      "items": [
+       [
+        "`SKILL.md`",
+        "how and when to use it"
+       ],
+       [
+        "`scripts/`",
+        "build, check, flow layout, drawn exhibits"
+       ],
+       [
+        "`assets/`",
+        "the CSS and the flow page script"
+       ],
+       [
+        "`examples/`",
+        "one spec per kind of page"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "`diagram` places its own boxes when you give no grid.",
+     "body": "Three hosts read one shared folder. No node sets `col` or `row`.",
+     "diagram": {
+      "nodes": [
+       {
+        "id": "claude",
+        "label": "Claude Code",
+        "sub": ".claude-plugin/"
+       },
+       {
+        "id": "codex",
+        "label": "Codex",
+        "sub": ".codex-plugin/",
+        "new": true
+       },
+       {
+        "id": "cursor",
+        "label": "Cursor",
+        "sub": ".cursor-plugin/",
+        "new": true
+       },
+       {
+        "id": "skills",
+        "label": "skills/",
+        "sub": "11 skills",
+        "store": true
+       },
+       {
+        "id": "hooks",
+        "label": "hooks/",
+        "sub": "always-on rules",
+        "store": true
+       }
+      ],
+      "edges": [
+       {
+        "from": "claude",
+        "to": "skills",
+        "label": "reads"
+       },
+       {
+        "from": "codex",
+        "to": "skills",
+        "label": "reads"
+       },
+       {
+        "from": "cursor",
+        "to": "hooks",
+        "label": "--json"
+       },
+       {
+        "from": "claude",
+        "to": "hooks",
+        "label": "stdout"
+       }
+      ]
+     }
+    },
+    {
+     "title": "A `diagram` with event labels is a state machine.",
+     "body": "The review mark on a flow page. The arrow back is found and routed by the builder.",
+     "diagram": {
+      "nodes": [
+       {
+        "id": "open",
+        "label": "Not reviewed"
+       },
+       {
+        "id": "done",
+        "label": "Reviewed",
+        "sub": "green tick"
+       }
+      ],
+      "edges": [
+       {
+        "from": "open",
+        "to": "done",
+        "label": "tick the box"
+       },
+       {
+        "from": "done",
+        "to": "open",
+        "label": "untick, or screen changes"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Time",
+   "summary": "What happens in which order.",
+   "steps": [
+    {
+     "title": "`sequence` shows who calls whom, in order.",
+     "body": "Installing onmywatch in Codex, as tested on 2026-10-26.",
+     "sequence": {
+      "actors": [
+       "You",
+       "Codex",
+       "Plugin cache"
+      ],
+      "messages": [
+       {
+        "from": "You",
+        "to": "Codex",
+        "text": "plugin marketplace add"
+       },
+       {
+        "from": "Codex",
+        "to": "Codex",
+        "text": "read .agents/plugins/"
+       },
+       {
+        "from": "You",
+        "to": "Codex",
+        "text": "plugin add onmywatch"
+       },
+       {
+        "from": "Codex",
+        "to": "Plugin cache",
+        "text": "copy skills/, hooks/"
+       },
+       {
+        "from": "Codex",
+        "to": "You",
+        "text": "installed 0.31.0",
+        "reply": true
+       },
+       {
+        "from": "You",
+        "to": "Codex",
+        "text": "/hooks: trust",
+        "new": true
+       }
+      ]
+     }
+    },
+    {
+     "title": "`timeline` marks single dates.",
+     "body": "Points in time, not spans. Use `schedule` for spans.",
+     "timeline": [
+      [
+       "Oct 6",
+       "first skills"
+      ],
+      [
+       "Oct 7",
+       "show-me named"
+      ],
+      [
+       "Oct 12",
+       "walkthroughs"
+      ],
+      [
+       "Oct 26",
+       "flow pages"
+      ],
+      [
+       "0.31.0",
+       "Codex, Cursor"
+      ]
+     ]
+    },
+    {
+     "title": "`schedule` shows work as spans over dates.",
+     "body": "Green is done, dashed is planned. The line is today.",
+     "schedule": {
+      "start": "2026-10-01",
+      "end": "2026-11-10",
+      "today": "2026-10-26",
+      "rows": [
+       {
+        "label": "Sheets",
+        "from": "2026-10-06",
+        "to": "2026-10-07",
+        "status": "done"
+       },
+       {
+        "label": "Flow pages",
+        "from": "2026-10-12",
+        "to": "2026-10-26",
+        "status": "done"
+       },
+       {
+        "label": "Codex and Cursor",
+        "from": "2026-10-26",
+        "to": "2026-10-26",
+        "status": "done"
+       },
+       {
+        "label": "Try in Cursor",
+        "from": "2026-10-27",
+        "to": "2026-11-03",
+        "status": "new"
+       }
+      ]
+     }
+    },
+    {
+     "title": "`path` traces one request through the code.",
+     "body": "How Cursor gets the always-on rules.",
+     "path": [
+      {
+       "where": "`hooks/cursor-hooks.json`",
+       "what": "Cursor runs the `sessionStart` command.",
+       "passes": "`--json`"
+      },
+      {
+       "where": "`hooks/always-on.sh`",
+       "what": "Reads two SKILL.md files and drops their frontmatter.",
+       "passes": "about 965 words"
+      },
+      {
+       "where": "`python3 json.dumps`",
+       "what": "Wraps the text for Cursor.",
+       "passes": "`{\"additional_context\": …}`"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Data",
+   "summary": "What is stored, and how much.",
+   "steps": [
+    {
+     "title": "`schema` draws tables and their keys.",
+     "body": "The flow spec as tables. Arrows come from the `fk` columns.",
+     "schema": {
+      "tables": [
+       {
+        "name": "flow",
+        "columns": [
+         [
+          "id",
+          "text",
+          "pk"
+         ],
+         [
+          "frame",
+          "phone|browser|none"
+         ]
+        ]
+       },
+       {
+        "name": "state",
+        "columns": [
+         [
+          "id",
+          "text",
+          "pk"
+         ],
+         [
+          "flow",
+          "text",
+          "fk flow.id"
+         ],
+         [
+          "title",
+          "text"
+         ]
+        ]
+       },
+       {
+        "name": "link",
+        "columns": [
+         [
+          "from",
+          "text",
+          "fk state.id"
+         ],
+         [
+          "label",
+          "text"
+         ],
+         [
+          "error",
+          "bool"
+         ]
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "title": "`table` compares options; `ok:` and `bad:` add colour.",
+     "body": "What differs between the three hosts.",
+     "table": {
+      "head": [
+       "Host",
+       "Start a skill",
+       "User-only skills",
+       "Always-on rules"
+      ],
+      "rows": [
+       [
+        "Claude Code",
+        "`/show-me`",
+        "ok: frontmatter",
+        "ok: stdout hook"
+       ],
+       [
+        "Codex",
+        "`$show-me`",
+        "ok: `agents/openai.yaml`",
+        "ok: hook, after you trust it"
+       ],
+       [
+        "Cursor",
+        "`/show-me`",
+        "ok: frontmatter",
+        "ok: JSON hook"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "`limits` shows a number against its ceiling.",
+     "body": "The always-on text against Codex's default context limit. The token count is an estimate.",
+     "limits": [
+      {
+       "label": "always-on rules, about 1,300 tokens",
+       "value": "52%",
+       "pct": 52
+      },
+      {
+       "label": "Codex extra-context limit",
+       "value": "2,500 tokens",
+       "pct": 100
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Code",
+   "summary": "The exact text, and what each part does.",
+   "steps": [
+    {
+     "title": "`code` quotes a file as it is.",
+     "code": {
+      "where": "hooks/cursor-hooks.json",
+      "text": "{\n  \"version\": 1,\n  \"hooks\": {\n    \"sessionStart\": [\n      { \"command\": \"bash \\\"${CURSOR_PLUGIN_ROOT:-.}/hooks/always-on.sh\\\" --json\" }\n    ]\n  }\n}"
+     }
+    },
+    {
+     "title": "`anno` names each part of one real line.",
+     "anno": [
+      {
+       "text": "bash",
+       "why": "no execute bit needed"
+      },
+      {
+       "text": "${CURSOR_PLUGIN_ROOT:-.}",
+       "why": "plugin folder, or here"
+      },
+      {
+       "text": "/hooks/always-on.sh",
+       "why": "same script as Claude"
+      },
+      {
+       "text": "--json",
+       "why": "Cursor needs JSON",
+       "kind": "wrong"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "Reasoning",
+   "summary": "Why it is this way, what is unknown, and the steps to take.",
+   "steps": [
+    {
+     "title": "`decisions` gives each choice its reason and source.",
+     "decisions": [
+      {
+       "choice": "One shared root for all hosts",
+       "over": [
+        "A copy of skills/ per host"
+       ],
+       "why": "One edit reaches every host; a script keeps versions in step.",
+       "confidence": "supported",
+       "source": "diagram-design ADR 0008; scripts/sync-hosts.py"
+      }
+     ]
+    },
+    {
+     "title": "`gaps` says what nobody has checked yet.",
+     "gaps": [
+      {
+       "question": "Do the hooks run in a live Codex session?",
+       "looked": "Install tested with codex-cli 0.163.0, no session",
+       "ask": "Run one signed-in session"
+      },
+      {
+       "question": "Does Cursor load the plugin?",
+       "looked": "Hook command run by hand; install needs a login",
+       "ask": "Install it in Cursor once"
+      }
+     ]
+    },
+    {
+     "title": "`flow` lists short steps in order.",
+     "body": "Releasing a change. The accent marks the step added in 0.31.0.",
+     "flow": [
+      {
+       "text": "Edit"
+      },
+      {
+       "text": "Bump version"
+      },
+      {
+       "text": "`sync-hosts.py`",
+       "new": true
+      },
+      {
+       "text": "Commit"
+      },
+      {
+       "text": "Push"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

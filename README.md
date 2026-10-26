@@ -29,6 +29,25 @@ claude plugin marketplace update onmywatch
 claude plugin update onmywatch@onmywatch
 ```
 
+### Codex
+
+```
+codex plugin marketplace add dip497/onmywatch
+codex plugin add onmywatch@onmywatch
+```
+
+Then open `/hooks` in Codex and trust the onmywatch hook; Codex skips plugin hooks until you do, and asks again after a hook changes. Start a skill with `$name` (for example `$show-me`) or pick it from `/skills`. To update: `codex plugin marketplace upgrade`. Plugins work in the Codex CLI and desktop app, not the IDE extension.
+
+### Cursor
+
+```
+agent plugin marketplace add https://github.com/dip497/onmywatch
+```
+
+Or copy the repository to `~/.cursor/plugins/local/onmywatch` and reload the window. Start a skill with `/name`. The always-on rules arrive through Cursor's `sessionStart` hook.
+
+All three hosts share `skills/` and `hooks/`. Only Claude Code's files are edited by hand; `scripts/sync-hosts.py` writes the Codex and Cursor manifests from them.
+
 ## Skills
 
 | Skill | What it does | How it starts |
@@ -42,7 +61,7 @@ claude plugin update onmywatch@onmywatch
 | `/next-time-faster` | Run at the end of a long session. Finds the setup and steps that cost time and will come back, then proposes the lightest fix that holds: nothing, a doc pointer, a script, a hook, or as a last resort a skill. Builds only after approval and proves what it builds. | You |
 | `/brooooo` | Press it when a reply did not land or the agent got something wrong. It restates plainly, or owns the mistake and fixes it. | You |
 | `/walk-me-through` | Explains how something works and why it is that way: finds the ground truth, follows the real thing step by step, and gives each decision with its source and how sure it is. Works for code, processes, incidents or a session's work. Builds a tabbed page with guided tours through `/show-me` when asked. | You or the agent |
-| `/show-me` | Shows the topic instead of explaining it: a text picture or Mermaid in the chat, or an HTML engineering sheet built from a small JSON spec and premade assets (`/show-me sheet`, `/show-me share`), or a map of what was built as a user flow: screens, decisions, error paths and loops, with zoom, a full-size view and review marks (`/show-me flow`). | You |
+| `/show-me` | Shows the topic instead of explaining it: a text picture in the chat (a page when it needs a real diagram), or an HTML engineering sheet built from a small JSON spec and premade assets (`/show-me sheet`, `/show-me share`), or a map of what was built as a user flow: screens, decisions, error paths and loops, with zoom, a full-size view and review marks (`/show-me flow`). | You |
 | `/no-added-comments` | Keeps diffs free of comments the agent added. | You or the agent |
 
 "You or the agent" means you can type it, and the agent also starts it on its own when the task matches.
@@ -56,11 +75,13 @@ claude plugin update onmywatch@onmywatch
 
 ### show-me sheet
 
-![A show-me sheet explaining onmywatch](skills/show-me/examples/onmywatch.png)
+![A show-me sheet explaining onmywatch](skills/show-me/examples/sheets/how-onmywatch-works.png)
 
 ### show-me flow
 
-![A show-me flow of a sign-in journey](skills/show-me/examples/sign-in-flow.png)
+![A show-me flow of a sign-in journey](skills/show-me/examples/flows/sign-in-flow.png)
+
+More examples, one per kind of page: [skills/show-me/examples](skills/show-me/examples/README.md).
 
 ## Evals
 
@@ -120,13 +141,14 @@ Latest scores, 3 runs per case:
 2. Add a row to the table above and to `skills/onmywatch/SKILL.md`.
 3. Add eval cases under `evals/<name>/<case>/` and tag them with the skill name.
 4. Bump `version` in `.claude-plugin/plugin.json`.
+5. Run `python3 scripts/sync-hosts.py` to copy the version to the Codex and Cursor manifests and to mark user-only skills for Codex. `--check` exits 1 if you forgot.
 
 ## Credits
 
 - `just-tell-me` adapts [i-have-adhd](https://github.com/ayghri/i-have-adhd) by Ayoub Ghriss (MIT), with lessons from [caveman](https://github.com/JuliusBrussee/caveman) by Julius Brussee and [caveman-micro](https://github.com/kuba-guzik/caveman-micro).
 - `brooooo` adapts `bro`, and `trust-issues` adapts `principle-redesign-from-first-principles` and `principle-attack-the-premise`, from [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan (MIT).
 - `walk-me-through` draws on pstack's `how`, `why` (its confidence tiers) and `teach`, Matt Pocock's `teach` (mission first), Warp's `pr-walkthrough` (separate views with guided tours, sized to the subject) and egonex's `understand-anything`.
-- `show-me` draws on [show-me](https://github.com/humanlayer/skills/tree/main/plugins/show-me) by HumanLayer (MIT), the [html-plan](https://github.com/anthropics/claude-plugins-community/tree/main/html-plan) plugin by Thariq Shihipar (MIT), [archify](https://github.com/tt-a1i/archify) by tt-a1i (MIT), [flow-preview](https://github.com/tanishqkancharla/flow-preview) by Tanishq Kancharla (Apache-2.0, ideas only, no code copied), a [post by Mona Biasia](https://x.com/mona_biasia/status/2114498844608385404) on reviewing agent work as a user flow, Claude's artifact design and diagramming guidance, and Andrej Karpathy's note on asking for STE text, diagrams and HTML instead of prose.
+- `show-me` draws on [show-me](https://github.com/humanlayer/skills/tree/main/plugins/show-me) by HumanLayer (MIT), the [html-plan](https://github.com/anthropics/claude-plugins-community/tree/main/html-plan) plugin by Thariq Shihipar (MIT), [archify](https://github.com/tt-a1i/archify) by tt-a1i (MIT), [flow-preview](https://github.com/tanishqkancharla/flow-preview) by Tanishq Kancharla (Apache-2.0, ideas only, no code copied), design rules from [diagram-design](https://github.com/cathrynlavery/diagram-design) by Cathryn Lavery (MIT, ideas only: the size budget per diagram and one accent colour), a [post by Mona Biasia](https://x.com/mona_biasia/status/2114498844608385404) on reviewing agent work as a user flow, Claude's artifact design and diagramming guidance, and Andrej Karpathy's note on asking for STE text, diagrams and HTML instead of prose.
 - `talk-is-cheap` adapts the ladder and root-cause rule from [ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT), pstack's `model-the-domain` and `foundational-thinking`, and the ISO/IEC 25010 quality model.
 - `trust-me-bro` adapts [test-audit](https://github.com/openclaw/openclaw/blob/main/.agents/skills/test-audit/SKILL.md) from openclaw (MIT) and pstack's `principle-test-behavior-not-implementation`.
 - `next-time-faster` draws on pstack's `reflect` (including its reviewer and synthesizer prompts), `automate-me`, `encode-lessons-in-structure` and `build-the-lever`, and Matt Pocock's `retro`.

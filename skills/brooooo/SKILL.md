@@ -2,11 +2,14 @@
 name: brooooo
 description: Invoke with /brooooo when the agent is going the wrong way, did something wrong, or gave a reply that did not land. The reader is frustrated. Stop, find where you drifted from what they asked, and get back on their track.
 disable-model-invocation: true
+argument-hint: '[what went wrong]'
 ---
 
 # brooooo
 
 The reader just said "brooooo". That is frustration: "why are you doing this?" Something in your recent turns went against what they want.
+
+What went wrong, in the reader's words: $ARGUMENTS. If that is empty, find it in step 2.
 
 ## 1. Stop
 

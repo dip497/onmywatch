@@ -1,11 +1,14 @@
 ---
 name: walk-me-through
 description: "Use when someone wants to understand something: how a system, feature, process, decision or piece of work operates and why it ended up that way. 'How does X work', 'walk me through this', 'explain what we built', 'how did we end up with this', 'help me understand this PR / runbook / incident'. Finds the ground truth, follows the real thing step by step, and gives the reasons with their sources and how sure they are."
+argument-hint: '[topic]'
 ---
 
 # walk-me-through
 
 Make one person understand one thing. Not a review, not a summary of results: what it is, how it works, why it is this way, and what nobody knows.
+
+Topic: $ARGUMENTS. If that is empty, the current conversation.
 
 ## Before you start
 

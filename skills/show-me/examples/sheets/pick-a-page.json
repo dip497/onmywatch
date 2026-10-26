@@ -1,0 +1,39 @@
+{
+  "title": "Pick a show-me Page",
+  "meta": "start here · skills/show-me/SKILL.md · 0.31.0",
+  "lead": {
+    "answer": "Ask for the smallest picture that answers the question.",
+    "points": [
+      "Plain `/show-me` answers in the chat with text only. Anything that needs a drawn diagram becomes a page.",
+      "Add `share` to publish a page as a private link."
+    ]
+  },
+  "panels": [
+    {"title": "The question decides the command.", "ref": "SKILL.md, Pick the level",
+     "table": {"head": ["You want to know", "Type", "You get"], "rows": [
+       ["One rule or one fact", "`/show-me`", "two or three sentences"],
+       ["What calls what, or what a change does", "`/show-me`", "a call tree, file tree or diff in a code block"],
+       ["How several parts talk to each other", "`/show-me`", "a one-panel page with a drawn diagram"],
+       ["A comparison or a design choice", "`/show-me sheet`", "one page of lettered panels"],
+       ["How something works and why", "`/walk-me-through`", "a page with tabs and steps"],
+       ["What was built, screen by screen", "`/show-me flow`", "a map of screens and decisions"]]}},
+    {"title": "The terminal cannot draw, so diagrams go on a page.", "ref": "SKILL.md, Never put Mermaid in the chat", "half": true,
+     "table": {"head": ["In the chat", "Result"], "rows": [
+       ["ok: Text in a code block", "reads the same everywhere"],
+       ["bad: Mermaid", "shows as source code"],
+       ["bad: SVG or HTML", "shows as source code"]]}},
+    {"title": "Four habits make a page worth reading.", "ref": "SKILL.md, Writing", "half": true,
+     "table": {"head": ["Do", "Not"], "rows": [
+       ["ok: Titles that state the point", "bad: Titles that name a topic"],
+       ["ok: Real names, numbers, `file:line`", "bad: Invented data"],
+       ["ok: Label every arrow", "bad: Bare arrows"],
+       ["ok: Look at the screenshots", "bad: Say it looks right unseen"]]}},
+    {"title": "One JSON key picks the kind of page.", "ref": "examples/",
+     "tree": {"root": "`page.json`", "sub": "has exactly one of three keys", "items": [
+       ["`panels`", "sheet: `sheets/`"],
+       ["`views`", "walkthrough: `walkthroughs/`"],
+       ["`flows`", "flow page: `flows/`"]]}},
+    {"title": "Every page is built and checked the same way.", "ref": "scripts/build.py, scripts/check.py",
+     "flow": [{"text": "Write `page.json`"}, {"text": "`build.py`"}, {"text": "`check.py`"}, {"text": "Screenshots"}, {"text": "Open or `share`", "new": true}]}
+  ]
+}

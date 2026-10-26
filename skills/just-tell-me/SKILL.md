@@ -2,6 +2,7 @@
 name: just-tell-me
 description: 'Replies the reader can act on at once: answer first, numbered steps, where the work stands, one next step, no filler, every fact kept. Invoke with /just-tell-me; stays on until "stop just-tell-me".'
 disable-model-invocation: true
+argument-hint: '[question]'
 ---
 
 # just-tell-me

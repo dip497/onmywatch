@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign-in flows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Readability floor: body 17px, nothing under 14px, text contrast 4.5:1 or more in both themes. */
+:root{
+  --paper:#f4f4f3; --ink:#1e1e1e; --muted:#555555; --line:#9b9b9b; --hair:#dddddc;
+  --badge:#e4e4e3; --badge-ink:#1e1e1e; --fill:#eaeae9;
+  --note:#2a2a2a; --note-soft:#e1e1e0; --ok:#2f6a45; --ok-soft:#e3ece6; --bad:#a3372f; --bezel:#2a2a2a;
+  --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --radius:8px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1a1a1a; --ink:#e6e6e5; --muted:#a8a8a7; --line:#5e5e5e; --hair:#2f2f2f;
+  --badge:#2b2b2b; --badge-ink:#e6e6e5; --fill:#222222;
+  --note:#f1f1f0; --note-soft:#333333; --ok:#8ec8a0; --ok-soft:#1f2c24; --bad:#ec9a92; --bezel:#4a4a4a; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#1a1a1a; --ink:#e6e6e5; --muted:#a8a8a7; --line:#5e5e5e; --hair:#2f2f2f;
+  --badge:#2b2b2b; --badge-ink:#e6e6e5; --fill:#222222;
+  --note:#f1f1f0; --note-soft:#333333; --ok:#8ec8a0; --ok-soft:#1f2c24; --bad:#ec9a92; --bezel:#4a4a4a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+code,.mono{font-family:var(--mono);font-size:.9em}
+::selection{background:var(--note-soft);color:var(--ink)}
+html{scrollbar-color:var(--line) transparent}
+a{color:var(--note);text-underline-offset:3px}
+table,.limits,.schedule,.meta{font-variant-numeric:tabular-nums}
+
+.sheet{max-width:1080px;margin:24px auto;border:1px solid var(--line);border-radius:12px;padding:0 0 28px;overflow:hidden}
+.titleblock{display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:20px 28px}
+.titleblock h1{margin:0;font-size:28px;line-height:1.2;font-weight:600}
+.titleblock .meta{font:14px var(--mono);color:var(--muted)}
+
+/* The answer: read this and stop if it is enough. */
+.lead{margin:24px 28px 8px;padding:16px 20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--note-soft)}
+.lead p{margin:0 0 8px;font-size:19px;font-weight:500}
+.lead ul{margin:0;padding-left:20px}
+.lead li{margin:4px 0}
+
+/* Panels, in reading order. w6 puts two side by side on wide screens only. */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:16px 28px 0;align-items:start}
+.panel{grid-column:span 2;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;min-width:0}
+.panel.w6{grid-column:span 1}
+.panel>header{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.panel>header .badge{background:var(--badge);color:var(--badge-ink);font-weight:600;font-size:18px;min-width:44px;display:grid;place-items:center}
+.panel>header div{padding:10px 16px}
+.panel>header h2{margin:0;font-size:19px;line-height:1.35;font-weight:600}
+.panel>header .ref{display:block;font:14px var(--mono);color:var(--muted);margin-top:2px}
+.panel .body{padding:18px 20px}
+.caption{font-size:15px;color:var(--muted);margin:14px 0 0}
+
+/* One real line with each part bracketed and named. */
+.anno{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 6px;font:17px/1.35 var(--mono)}
+.anno .seg{display:inline-flex;flex-direction:column;align-items:center;max-width:100%}
+.anno .seg>.t{overflow-wrap:anywhere;padding:0 2px}
+.anno .seg.n>.t{border:2px solid var(--note);border-top:0;padding-bottom:4px}
+.anno .seg.x>.t{color:var(--bad);border:2px solid var(--bad);border-top:0;padding-bottom:4px}
+.anno .seg>.why{font:14px/1.3 var(--sans);color:var(--note);margin-top:6px;text-align:center;max-width:22ch}
+.anno .seg.x>.why{color:var(--bad)}
+
+table{width:100%;border-collapse:collapse;font-size:16px}
+th{font:500 14px var(--sans);color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--hair);vertical-align:top}
+.ok,.bad{font-weight:500}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.ok::before,.bad::before{content:"";display:inline-block;width:.8em;height:.8em;margin-right:.35em;vertical-align:-.05em;background:currentColor;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+.ok::before{--icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.bad::before{--icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")}
+
+.limit{margin:4px 0 20px}
+.limit .lab{display:flex;justify-content:space-between;gap:12px;font-size:16px}
+.limit .lab b{font:500 15px var(--mono);color:var(--note);white-space:nowrap}
+.limit .track{height:14px;border:1px solid var(--hair);margin-top:8px;background:var(--fill)}
+.limit .track i{display:block;height:100%;background:var(--note)}
+
+.tree .root{display:inline-block;border:1px solid var(--line);background:var(--note-soft);padding:8px 16px;margin-bottom:12px}
+.tree .root small{display:block;color:var(--muted);font-size:14px}
+.tree ul{list-style:none;margin:0 0 0 14px;padding-left:20px;border-left:1px solid var(--line)}
+.tree li{position:relative;padding:6px 0}
+.tree li::before{content:"";position:absolute;left:-20px;top:20px;width:14px;border-top:1px solid var(--line)}
+.tree li small{display:block;color:var(--muted);font-size:15px}
+
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flow .box{border:1px solid var(--line);padding:8px 14px;font-size:16px}
+.flow .box.new{border:2px dashed var(--note);color:var(--note);font-weight:600}
+.flow .arrow{color:var(--muted);font-size:18px}
+
+.timeline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:7px;border-top:1px solid var(--line)}
+.timeline div{position:relative;text-align:center;color:var(--muted);font-size:15px;padding-top:24px}
+.timeline div::before{content:"";position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border:1.5px solid var(--line);border-radius:50%;background:var(--paper)}
+.timeline div b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+
+/* Mechanism diagram: inline SVG. Boxes are opaque so no line shows through; every arrow has a label. */
+figure.diagram{margin:0}
+figure.diagram .scroll{overflow-x:auto}
+figure.diagram svg{display:block;width:100%;max-width:100%;height:auto;min-width:680px;color:var(--ink)}
+figure.diagram .node{fill:var(--paper);stroke:var(--line);stroke-width:1.5}
+figure.diagram .node.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .node.store{fill:var(--fill)}
+figure.diagram .edge{fill:none;stroke:var(--muted);stroke-width:1.5}
+figure.diagram .edge.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .lbl{font:600 15px var(--sans);fill:currentColor}
+figure.diagram .sub{font:13px var(--sans);fill:var(--muted)}
+figure.diagram .elbl{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .elbl.new{fill:var(--note)}
+figure.diagram .mask{fill:var(--paper)}
+figure.diagram figcaption{font-size:15px;color:var(--muted);margin-top:10px}
+
+@media (max-width:760px){
+  .sheet{margin:0;border-width:0 0 1px;border-radius:0}
+  .titleblock,.grid{padding-left:16px;padding-right:16px}
+  .lead{margin-left:16px;margin-right:16px}
+  .grid{grid-template-columns:1fr}.panel.w6{grid-column:span 2}
+}
+
+figure.diagram .scroll,div.scroll{overflow-x:auto}
+
+/* Walkthrough: tabs for views, a guided tour of steps in each. Without JS every view shows, stacked. */
+.tabs{display:none;gap:4px;padding:16px 28px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.js .tabs{display:flex}
+.tabs button{font:500 16px var(--sans);color:var(--muted);background:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;padding:10px 16px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--line);background:var(--paper);margin-bottom:-1px}
+.tabs button:focus-visible,.tour button:focus-visible,summary:focus-visible{outline:2px solid var(--note);outline-offset:2px}
+.views{padding:20px 28px 0}
+.view{margin-bottom:32px}
+.view[hidden]{display:none}
+.vtitle{font-size:22px;margin:0 0 6px}
+.js .vtitle{display:none}
+.vsum{color:var(--muted);margin:0 0 14px;max-width:70ch}
+.tour{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.tour button{font:500 15px var(--sans);color:var(--ink);background:var(--fill);border:1px solid var(--line);padding:6px 14px;border-radius:6px;cursor:pointer}
+.tour .pos{font:14px var(--mono);color:var(--muted)}
+details.step{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;background:var(--paper)}
+details.step>summary{color:var(--ink);font-size:inherit;margin:0;display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;padding:10px 16px}
+details.step>summary::-webkit-details-marker{display:none}
+details.step>summary .num{background:var(--badge);color:var(--badge-ink);font-weight:600;min-width:30px;height:30px;display:grid;place-items:center}
+details.step>summary h3{margin:0;font-size:18px;font-weight:600}
+details.step[open]>summary{border-bottom:1px solid var(--line)}
+details.step .body{padding:16px 20px}
+details.step .body>p{margin:0 0 14px;max-width:72ch}
+
+/* path: an ordered trace through the thing */
+ol.path{list-style:none;counter-reset:p;margin:0;padding:0}
+ol.path li{counter-increment:p;position:relative;padding:8px 0 8px 40px;border-left:1px solid var(--line);margin-left:14px}
+ol.path li::before{content:counter(p);position:absolute;left:-14px;top:8px;width:26px;height:26px;border:1px solid var(--line);background:var(--paper);display:grid;place-items:center;font:500 14px var(--mono)}
+ol.path .where{display:block;font:500 14px var(--mono);color:var(--note)}
+ol.path .what{display:block}
+ol.path .passes{display:block;font-size:15px;color:var(--muted)}
+
+/* decisions: choice, what lost, why, how sure, where it says so */
+.decisions{display:grid;gap:12px}
+.decision{border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;background:var(--fill)}
+.decision .dhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.decision p{margin:8px 0 0}
+.decision .over{margin-top:6px;font-size:15px;color:var(--muted)}
+.decision .over span{font-weight:500}
+.decision .over ul{display:inline;margin:0;padding:0 0 0 6px;list-style:none}
+.decision .over li{display:inline}
+.decision .over li+li::before{content:" · "}
+.decision .src{margin-top:6px;font-size:14px;color:var(--muted)}
+.conf{font:500 14px var(--mono);padding:1px 8px;border:1px solid currentColor}
+.conf.direct,.conf.supported{color:var(--ok)}
+.conf.inferred{color:var(--note)}
+.conf.unknown{color:var(--bad)}
+
+/* code */
+pre.code{margin:0;padding:12px 14px;border-radius:6px;background:var(--fill);border:1px solid var(--hair);overflow-x:auto;font:14px/1.5 var(--mono)}
+details>summary{cursor:pointer;color:var(--note);font-size:15px;margin:6px 0}
+.body>.where{font:500 14px var(--mono);color:var(--note);margin-bottom:6px}
+
+@media (max-width:760px){.tabs,.views{padding-left:16px;padding-right:16px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+/* gaps: what we could not find */
+ul.gaps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.gaps li{border:1px dashed var(--bad);border-radius:var(--radius);padding:10px 14px}
+ul.gaps .looked,ul.gaps .ask{display:block;font-size:15px;color:var(--muted)}
+
+/* Flow: screens and decisions joined by labelled links. Click a screen to see it full size. */
+.flowpage{max-width:1500px}
+.spacer{flex:1}
+.fbar{display:flex;align-items:center;gap:12px;padding:16px 28px 0;flex-wrap:wrap}
+.fpick{font-size:15px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.fpick select,.ftheme,.zoom button,.fover button{font:500 15px var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+.flowsec{padding:0 28px}
+.js .flowsec[hidden]{display:none}
+.ftool{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 6px}
+.fname{font-size:20px;font-weight:600}
+.fplat{font:14px var(--mono);color:var(--muted);border:1px solid var(--hair);border-radius:6px;padding:1px 8px}
+.fcount{font:14px var(--mono);color:var(--ok)}
+.zoom{display:flex;align-items:center;gap:4px}
+.zoom output{font:14px var(--mono);color:var(--muted);min-width:48px;text-align:center}
+.fsum{margin:0 0 8px;color:var(--muted);max-width:80ch}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted);margin:0 0 10px}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.lg i{display:inline-block}
+.lg-screen{width:14px;height:18px;border:1px solid var(--line);border-radius:3px;background:var(--paper)}
+.lg-dec{width:20px;height:14px;border:1px solid var(--line);border-radius:7px;background:var(--fill)}
+.lg-link{width:26px;border-top:2px solid var(--muted)}
+.lg-link.error{border-color:var(--bad)}
+.lg-link.return{border-top-style:dashed}
+.fmap{overflow:auto;max-height:72vh;border:1px solid var(--hair);border-radius:var(--radius);cursor:grab;
+  background:var(--fill) radial-gradient(var(--hair) 1px,transparent 1px) 0 0/12px 12px}
+.fmap.dragging{cursor:grabbing;user-select:none}
+.fsize{position:relative}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0}
+.stage svg{position:absolute;inset:0;overflow:visible}
+.link{fill:none;stroke:var(--muted);stroke-width:1.5}
+.link.error{stroke:var(--bad)}
+.link.return{stroke-dasharray:6 5}
+.link.onpath{stroke:var(--note);stroke-width:2.5}
+.ah{fill:var(--muted)}.ah.err{fill:var(--bad)}
+.llbl rect{fill:var(--fill)}
+.llbl text{font:14px var(--sans);fill:var(--muted)}
+.llbl.error text{fill:var(--bad)}
+.llbl.onpath text{fill:var(--note);font-weight:600}
+.fnode{position:absolute;display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:var(--radius);cursor:pointer}
+.fnode:hover{background:var(--hair)}
+.fhead{display:flex;align-items:flex-start;gap:8px;height:40px}
+.ftitle{flex:1;min-width:0;font:600 14px/1.3 var(--sans);color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fsub{display:block;font-weight:400;color:var(--muted)}
+.fnode.sel .ftitle{color:var(--note)}
+.fnode.sel .thumb,.fnode.onpath .thumb{outline:2px solid var(--note);outline-offset:2px}
+.fnode.onpath .thumb{outline-style:dashed}
+.thumb{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--hair);border-radius:6px}
+.thumb.frame-phone{border-radius:18px;border:4px solid var(--bezel)}
+.thumb.frame-browser,.foscreen.frame-browser{--bar:12px;padding-top:var(--bar);background:
+  radial-gradient(circle at 8px 50%,var(--line) 2px,transparent 2.5px) 0 0/100% var(--bar) no-repeat,
+  radial-gradient(circle at 16px 50%,var(--line) 2px,transparent 2.5px) 0 0/100% var(--bar) no-repeat,
+  linear-gradient(var(--hair),var(--hair)) 0 0/100% var(--bar) no-repeat,var(--paper)}
+.thumb .scale{transform-origin:0 0;pointer-events:none}
+.reviewed .thumb .scale{opacity:.4}
+.reviewed .thumb::after{content:"";position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
+  background:var(--ok);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cmask id='m'%3E%3Ccircle cx='12' cy='12' r='12' fill='white'/%3E%3Cpath d='M7 12.4l3.3 3.3L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='12' cy='12' r='12' fill='white' mask='url(%23m)'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cmask id='m'%3E%3Ccircle cx='12' cy='12' r='12' fill='white'/%3E%3Cpath d='M7 12.4l3.3 3.3L17 9' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='12' cy='12' r='12' fill='white' mask='url(%23m)'/%3E%3C/svg%3E") center/contain no-repeat}
+.fdec{position:absolute;display:grid;place-items:center;text-align:center;padding:6px 14px;font:500 14px/1.3 var(--sans);color:var(--ink);
+  background:var(--paper);border:1.5px solid var(--line);border-radius:20px;cursor:pointer}
+.fdec:hover{background:var(--hair)}
+.fdec.sel,.fdec.onpath{border-color:var(--note)}
+.fdec.sel{color:var(--note);font-weight:600}
+input.review{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ok);cursor:pointer;flex:none}
+.foutline{margin:12px 0 0}
+.foutline summary{font-size:15px}
+.foutline ul{list-style:none;margin:8px 0 0;padding:0;columns:3 220px;gap:24px}
+.foutline li{display:flex;align-items:center;gap:8px;padding:3px 0;break-inside:avoid}
+.foutline button{all:unset;cursor:pointer;flex:1;font-size:15px;line-height:1.35;color:var(--ink)}
+.foutline button:hover{color:var(--note)}
+.fover{width:min(960px,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0 0 20px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink)}
+.fover::backdrop{background:rgba(20,20,20,.55)}
+.fobar{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--paper);border-bottom:1px solid var(--hair)}
+.fobar h2{margin:0;font-size:20px;line-height:1.3}
+.fosub,.fonote,.foin,.foout{margin:10px 20px 0}
+.fosub{color:var(--muted);font-size:15px}
+.fosub:empty,.fonote:empty,.foin:empty{display:none}
+.foin{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:15px;color:var(--muted)}
+.foin button,.foout button.plain{background:var(--fill)}
+.fostage{margin:14px 20px 0;padding:20px;border:1px solid var(--hair);border-radius:12px;
+  background:var(--fill) radial-gradient(var(--hair) 1px,transparent 1px) 0 0/12px 12px}
+.foscreen{margin:0 auto;background:var(--paper);overflow:hidden}
+.foscreen.frame-phone{border:8px solid var(--bezel);border-radius:36px}
+.foscreen.frame-browser{--bar:22px;border:1px solid var(--hair);border-radius:8px}
+.foscreen.decision{background:none;text-align:center}
+.foscreen.decision p{display:inline-block;margin:0;padding:18px 28px;font-size:20px;border:1.5px solid var(--line);border-radius:24px;background:var(--paper)}
+.foout{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fover button.fwd{border-color:var(--note);color:var(--note)}
+.fover button.error{border-color:var(--bad);color:var(--bad)}
+.fnode:focus-visible,.fdec:focus-visible,.fover button:focus-visible,.zoom button:focus-visible,.ftheme:focus-visible,input.review:focus-visible,.foutline button:focus-visible{outline:2px solid var(--note);outline-offset:2px}
+@media (max-width:760px){.fbar,.flowsec{padding-left:16px;padding-right:16px}.fmap{max-height:60vh}.fover{width:100vw;max-height:100vh;border-radius:0}}
+
+/* sequence, schema, schedule: more drawn exhibits; same colour meanings as the diagram */
+figure.diagram .life{stroke:var(--hair);stroke-width:1.5;stroke-dasharray:4 4}
+figure.diagram .edge.reply{stroke-dasharray:5 4}
+figure.diagram .edge.new{stroke:var(--note);stroke-width:2;stroke-dasharray:6 4}
+figure.diagram .edge.bad{stroke:var(--bad)}
+figure.diagram .elbl.bad{fill:var(--bad)}
+figure.diagram .thead{fill:var(--fill);stroke:var(--line);stroke-width:1}
+figure.diagram .trow{stroke:var(--hair)}
+figure.diagram .cname{font:14px var(--mono);fill:var(--ink)}
+figure.diagram .cname.key{font-weight:500;fill:var(--note)}
+figure.diagram .ctype{font:13px var(--mono);fill:var(--muted)}
+figure.diagram .grid{stroke:var(--hair)}
+figure.diagram .rlbl{font:14px var(--sans);fill:var(--ink)}
+figure.diagram .bar{fill:var(--muted);opacity:.55}
+figure.diagram .bar.done{fill:var(--ok);opacity:1}
+figure.diagram .bar.late{fill:var(--bad);opacity:1}
+figure.diagram .bar.new{fill:var(--note-soft);stroke:var(--note);stroke-dasharray:5 3;opacity:1}
+figure.diagram .today{stroke:var(--note);stroke-width:1.5}
+
+</style>
+</head>
+<body>
+<div class="sheet flowpage">
+<div class="titleblock"><h1>Sign-in flows</h1><span class="meta">example · HTML mock-ups · show-me flow</span></div>
+<div class="lead"><p>A person reaches the home screen in one try, or after one fixed mistake.</p><ul><li>Every failure keeps what the person typed and has a way back.</li><li>No message says whether an email has an account.</li></ul></div>
+<div class="fbar"><label class="fpick">Flow <select><option value="0">Sign in</option><option value="1">Reset password</option></select></label><span class="spacer"></span><button type="button" class="ftheme" aria-pressed="false">Dark</button></div><div class="flows"><section class="flowsec" data-flow="0" data-frame="phone" data-width="390"><div class="ftool"><span class="fname">Sign in</span><span class="fplat">iOS · mock-ups</span><span class="fcount" aria-live="polite"></span><span class="spacer"></span><span class="zoom"><button type="button" data-zoom="-1" aria-label="Zoom out">−</button><output>100%</output><button type="button" data-zoom="1" aria-label="Zoom in">+</button><button type="button" data-zoom="fit">Fit to screen</button></span></div><p class="fsum">From the sign-in screen to the home screen, with every way it can fail.</p><div class="legend"><span class="lg"><i class="lg-screen"></i>Screen</span><span class="lg"><i class="lg-dec"></i>Decision</span><span class="lg"><i class="lg-link"></i>User action or answer</span><span class="lg"><i class="lg-link error"></i>Error path</span><span class="lg"><i class="lg-link return"></i>Goes back</span></div><div class="fmap" tabindex="-1"><div class="fsize" style="width:2232px;height:872px"><div class="stage" style="width:2232px;height:872px"><svg width="2232" height="872" aria-hidden="true"><defs><marker id="fa-0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="fa-0-err" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah err"/></marker></defs><path class="link " data-from="form" data-to="email-ok" d="M206,310 L348,310 L348,299 L376,299" marker-end="url(#fa-0)"/><path class="link " data-from="email-ok" data-to="checking" d="M556,299 L726,299" marker-end="url(#fa-0)"/><path class="link error" data-from="email-ok" data-to="bad-email" d="M556,321 L676,321 L676,670 L726,670" marker-end="url(#fa-0-err)"/><path class="link return" data-from="bad-email" data-to="email-ok" d="M868,670 L892,670 L892,106 L330,106 L330,321 L376,321" marker-end="url(#fa-0)"/><path class="link " data-from="checking" data-to="answer" d="M868,299 L1010,299 L1010,310 L1038,310" marker-end="url(#fa-0)"/><path class="link error" data-from="checking" data-to="offline" d="M868,321 L988,321 L988,544 L1038,544" marker-end="url(#fa-0-err)"/><path class="link return" data-from="offline" data-to="checking" d="M1180,544 L1204,544 L1204,84 L658,84 L658,321 L726,321" marker-end="url(#fa-0)"/><path class="link " data-from="answer" data-to="workspace" d="M1218,299 L1360,299 L1360,310 L1388,310" marker-end="url(#fa-0)"/><path class="link error" data-from="answer" data-to="wrong" d="M1218,321 L1338,321 L1338,544 L1388,544" marker-end="url(#fa-0-err)"/><path class="link return" data-from="wrong" data-to="form" d="M1530,544 L1554,544 L1554,62 L40,62 L40,310 L64,310" marker-end="url(#fa-0)"/><path class="link " data-from="workspace" data-to="home" d="M1568,299 L1596,299 L1596,40 L2022,40 L2022,299 L2050,299" marker-end="url(#fa-0)"/><path class="link " data-from="workspace" data-to="setup" d="M1568,321 L1710,321 L1710,310 L1738,310" marker-end="url(#fa-0)"/><path class="link " data-from="setup" data-to="home" d="M1880,310 L2000,310 L2000,321 L2050,321" marker-end="url(#fa-0)"/><g class="llbl " data-from="form" data-to="email-ok"><rect x="228" y="287" width="97.6" height="19" rx="4"/><text x="235" y="300">Tap Sign in</text></g><g class="llbl " data-from="email-ok" data-to="checking"><rect x="623" y="276" width="36.8" height="19" rx="4"/><text x="630" y="289">Yes</text></g><g class="llbl error" data-from="email-ok" data-to="bad-email"><rect x="601" y="298" width="29.2" height="19" rx="4"/><text x="608" y="311">No</text></g><g class="llbl return" data-from="bad-email" data-to="email-ok"><rect x="539" y="83" width="143.2" height="19" rx="4"/><text x="546" y="96">Fix and tap again</text></g><g class="llbl " data-from="checking" data-to="answer"><rect x="883" y="276" width="112.8" height="19" rx="4"/><text x="890" y="289">Reply arrives</text></g><g class="llbl error" data-from="checking" data-to="offline"><rect x="883" y="298" width="90.0" height="19" rx="4"/><text x="890" y="311">No network</text></g><g class="llbl return" data-from="offline" data-to="checking"><rect x="890" y="61" width="82.39999999999999" height="19" rx="4"/><text x="897" y="74">Try again</text></g><g class="llbl " data-from="answer" data-to="workspace"><rect x="1252" y="276" width="74.8" height="19" rx="4"/><text x="1259" y="289">Accepted</text></g><g class="llbl error" data-from="answer" data-to="wrong"><rect x="1241" y="298" width="74.8" height="19" rx="4"/><text x="1248" y="311">Rejected</text></g><g class="llbl return" data-from="wrong" data-to="form"><rect x="737" y="39" width="120.39999999999999" height="19" rx="4"/><text x="744" y="52">Edit and retry</text></g><g class="llbl " data-from="workspace" data-to="home"><rect x="1791" y="17" width="36.8" height="19" rx="4"/><text x="1798" y="30">Yes</text></g><g class="llbl " data-from="workspace" data-to="setup"><rect x="1624" y="298" width="29.2" height="19" rx="4"/><text x="1631" y="311">No</text></g><g class="llbl " data-from="setup" data-to="home"><rect x="1895" y="287" width="90.0" height="19" rx="4"/><text x="1902" y="300">Tap Create</text></g></svg><div class="fnode" data-id="form" tabindex="0" role="button" aria-label="Open Sign in" style="left:64px;top:148px;width:142px"><div class="fhead"><span class="ftitle" title="Sign in">Sign in<span class="fsub">Empty form</span></span><input type="checkbox" class="review" data-review="form" aria-label="Reviewed: Sign in"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><p style='margin:0 0 20px;color:var(--muted)'>Welcome back.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>&nbsp;</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>&nbsp;</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Sign in</div><p style='text-align:center;color:var(--note);margin-top:18px'>Forgot password?</p></div></div></div></div><button type="button" class="fdec" data-id="email-ok" style="left:376px;top:274px;width:180px;height:72px">Email looks valid?</button><div class="fnode" data-id="checking" tabindex="0" role="button" aria-label="Open Checking" style="left:726px;top:148px;width:142px"><div class="fhead"><span class="ftitle" title="Checking">Checking<span class="fsub">Waiting for the server</span></span><input type="checkbox" class="review" data-review="checking" aria-label="Reviewed: Checking"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><p style='margin:0 0 20px;color:var(--muted)'>Welcome back.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@example.com</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>••••••••</div><div style='background:var(--fill);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Signing in…</div></div></div></div></div><button type="button" class="fdec" data-id="answer" style="left:1038px;top:274px;width:180px;height:72px">Server answer?</button><button type="button" class="fdec" data-id="workspace" style="left:1388px;top:274px;width:180px;height:72px">Has a workspace?</button><div class="fnode" data-id="home" tabindex="0" role="button" aria-label="Open Home" style="left:2050px;top:148px;width:142px"><div class="fhead"><span class="ftitle" title="Home">Home<span class="fsub">Signed in</span></span><input type="checkbox" class="review" data-review="home" aria-label="Reviewed: Home"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Welcome back, Ana</h2><p style='margin:0 0 20px;color:var(--muted)'>You have 3 open tasks.</p><div style='border:1px solid var(--hair);border-radius:10px;padding:12px;margin-bottom:8px'>Review the March report</div><div style='border:1px solid var(--hair);border-radius:10px;padding:12px;margin-bottom:8px'>Call the supplier</div><div style='border:1px solid var(--hair);border-radius:10px;padding:12px;margin-bottom:8px'>Book the team room</div></div></div></div></div><div class="fnode" data-id="setup" tabindex="0" role="button" aria-label="Open Create a workspace" style="left:1738px;top:148px;width:142px"><div class="fhead"><span class="ftitle" title="Create a workspace">Create a workspace<span class="fsub">First sign-in</span></span><input type="checkbox" class="review" data-review="setup" aria-label="Reviewed: Create a workspace"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Create a workspace</h2><p style='margin:0 0 20px;color:var(--muted)'>A workspace holds your team's tasks.</p><label style='display:block;font-size:14px;color:var(--muted)'>Workspace name</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>Ana's team</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Create</div></div></div></div></div><div class="fnode" data-id="wrong" tabindex="0" role="button" aria-label="Open Sign in" style="left:1388px;top:382px;width:142px"><div class="fhead"><span class="ftitle" title="Sign in">Sign in<span class="fsub">Wrong email or password</span></span><input type="checkbox" class="review" data-review="wrong" aria-label="Reviewed: Sign in"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><div style='height:12px'></div><div style='border:1px solid var(--bad);border-radius:8px;padding:10px 12px;margin-bottom:16px;color:var(--bad)'>That email and password do not match.</div><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@example.com</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>&nbsp;</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Sign in</div></div></div></div></div><div class="fnode" data-id="offline" tabindex="0" role="button" aria-label="Open No connection" style="left:1038px;top:382px;width:142px"><div class="fhead"><span class="ftitle" title="No connection">No connection<span class="fsub">Request failed</span></span><input type="checkbox" class="review" data-review="offline" aria-label="Reviewed: No connection"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>No connection</h2><p style='margin:0 0 20px;color:var(--muted)'>Check your internet and try again. What you typed is kept.</p><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Try again</div></div></div></div></div><div class="fnode" data-id="bad-email" tabindex="0" role="button" aria-label="Open Sign in" style="left:726px;top:508px;width:142px"><div class="fhead"><span class="ftitle" title="Sign in">Sign in<span class="fsub">Email is not valid</span></span><input type="checkbox" class="review" data-review="bad-email" aria-label="Reviewed: Sign in"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Sign in</h2><p style='margin:0 0 20px;color:var(--muted)'>Welcome back.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1.5px solid var(--bad);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@</div><div style='color:var(--bad);font-size:14px;margin:-8px 0 12px'>Enter an email like name@example.com.</div><label style='display:block;font-size:14px;color:var(--muted)'>Password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>••••••••</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Sign in</div></div></div></div></div></div></div></div><details class="foutline"><summary>All screens, in path order</summary><ul><li><button type="button" data-open="form">Sign in</button><input type="checkbox" class="review" data-review="form" aria-label="Reviewed: Sign in"></li><li><button type="button" data-open="checking">Checking</button><input type="checkbox" class="review" data-review="checking" aria-label="Reviewed: Checking"></li><li><button type="button" data-open="home">Home</button><input type="checkbox" class="review" data-review="home" aria-label="Reviewed: Home"></li><li><button type="button" data-open="setup">Create a workspace</button><input type="checkbox" class="review" data-review="setup" aria-label="Reviewed: Create a workspace"></li><li><button type="button" data-open="wrong">Sign in</button><input type="checkbox" class="review" data-review="wrong" aria-label="Reviewed: Sign in"></li><li><button type="button" data-open="offline">No connection</button><input type="checkbox" class="review" data-review="offline" aria-label="Reviewed: No connection"></li><li><button type="button" data-open="bad-email">Sign in</button><input type="checkbox" class="review" data-review="bad-email" aria-label="Reviewed: Sign in"></li></ul></details><script type="application/json" class="fdata">{"id": "sign-in", "start": "form", "states": {"form": {"title": "Sign in", "decision": false, "note": "Both fields are empty. The button stays on, so a person learns the rules by trying.", "sub": "Empty form", "fp": "704ac1e059b0"}, "email-ok": {"title": "Email looks valid?", "decision": true, "note": "", "sub": "", "fp": "37768421bc44"}, "checking": {"title": "Checking", "decision": false, "note": "", "sub": "Waiting for the server", "fp": "0db356e0b26a"}, "answer": {"title": "Server answer?", "decision": true, "note": "", "sub": "", "fp": "e9ca41030316"}, "workspace": {"title": "Has a workspace?", "decision": true, "note": "", "sub": "", "fp": "9b0ec9200ebe"}, "home": {"title": "Home", "decision": false, "note": "", "sub": "Signed in", "fp": "9f99b9302a12"}, "setup": {"title": "Create a workspace", "decision": false, "note": "", "sub": "First sign-in", "fp": "94a0f0b9d47a"}, "wrong": {"title": "Sign in", "decision": false, "note": "The message names neither field, so nobody can learn which emails have accounts.", "sub": "Wrong email or password", "fp": "9d6b623c21b3"}, "offline": {"title": "No connection", "decision": false, "note": "", "sub": "Request failed", "fp": "92a273d733db"}, "bad-email": {"title": "Sign in", "decision": false, "note": "The app checks the shape of the email before it sends anything.", "sub": "Email is not valid", "fp": "a756d94ea8b4"}}, "links": [{"from": "form", "to": "email-ok", "label": "Tap Sign in", "error": false, "back": false}, {"from": "email-ok", "to": "checking", "label": "Yes", "error": false, "back": false}, {"from": "email-ok", "to": "bad-email", "label": "No", "error": true, "back": false}, {"from": "bad-email", "to": "email-ok", "label": "Fix and tap again", "error": false, "back": true}, {"from": "checking", "to": "answer", "label": "Reply arrives", "error": false, "back": false}, {"from": "checking", "to": "offline", "label": "No network", "error": true, "back": false}, {"from": "offline", "to": "checking", "label": "Try again", "error": false, "back": true}, {"from": "answer", "to": "workspace", "label": "Accepted", "error": false, "back": false}, {"from": "answer", "to": "wrong", "label": "Rejected", "error": true, "back": false}, {"from": "wrong", "to": "form", "label": "Edit and retry", "error": false, "back": true}, {"from": "workspace", "to": "home", "label": "Yes", "error": false, "back": false}, {"from": "workspace", "to": "setup", "label": "No", "error": false, "back": false}, {"from": "setup", "to": "home", "label": "Tap Create", "error": false, "back": false}]}</script></section><section class="flowsec" data-flow="1" data-frame="phone" data-width="390"><div class="ftool"><span class="fname">Reset password</span><span class="fplat">iOS · mock-ups</span><span class="fcount" aria-live="polite"></span><span class="spacer"></span><span class="zoom"><button type="button" data-zoom="-1" aria-label="Zoom out">−</button><output>100%</output><button type="button" data-zoom="1" aria-label="Zoom in">+</button><button type="button" data-zoom="fit">Fit to screen</button></span></div><div class="legend"><span class="lg"><i class="lg-screen"></i>Screen</span><span class="lg"><i class="lg-link"></i>User action or answer</span><span class="lg"><i class="lg-link error"></i>Error path</span><span class="lg"><i class="lg-link return"></i>Goes back</span></div><div class="fmap" tabindex="-1"><div class="fsize" style="width:894px;height:806px"><div class="stage" style="width:894px;height:806px"><svg width="894" height="806" aria-hidden="true"><defs><marker id="fa-1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="fa-1-err" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah err"/></marker></defs><path class="link " data-from="ask" data-to="sent" d="M206,244 L376,244" marker-end="url(#fa-1)"/><path class="link " data-from="sent" data-to="new" d="M518,233 L660,233 L660,244 L688,244" marker-end="url(#fa-1)"/><path class="link error" data-from="sent" data-to="expired" d="M518,255 L638,255 L638,604 L688,604" marker-end="url(#fa-1-err)"/><path class="link return" data-from="expired" data-to="ask" d="M830,604 L854,604 L854,40 L40,40 L40,244 L64,244" marker-end="url(#fa-1)"/><g class="llbl " data-from="ask" data-to="sent"><rect x="235" y="221" width="112.8" height="19" rx="4"/><text x="242" y="234">Tap Send link</text></g><g class="llbl " data-from="sent" data-to="new"><rect x="517" y="210" width="143.2" height="19" rx="4"/><text x="524" y="223">Open link in time</text></g><g class="llbl error" data-from="sent" data-to="expired"><rect x="518" y="232" width="120.39999999999999" height="19" rx="4"/><text x="525" y="245">Open link late</text></g><g class="llbl return" data-from="expired" data-to="ask"><rect x="383" y="17" width="128.0" height="19" rx="4"/><text x="390" y="30">Send a new link</text></g></svg><div class="fnode" data-id="ask" tabindex="0" role="button" aria-label="Open Reset password" style="left:64px;top:82px;width:142px"><div class="fhead"><span class="ftitle" title="Reset password">Reset password<span class="fsub">Ask for the email</span></span><input type="checkbox" class="review" data-review="ask" aria-label="Reviewed: Reset password"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Reset password</h2><p style='margin:0 0 20px;color:var(--muted)'>We send a link to your email.</p><label style='display:block;font-size:14px;color:var(--muted)'>Email</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>ana@example.com</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Send link</div></div></div></div></div><div class="fnode" data-id="sent" tabindex="0" role="button" aria-label="Open Check your email" style="left:376px;top:82px;width:142px"><div class="fhead"><span class="ftitle" title="Check your email">Check your email<span class="fsub">Link sent</span></span><input type="checkbox" class="review" data-review="sent" aria-label="Reviewed: Check your email"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Check your email</h2><p style='margin:0 0 20px;color:var(--muted)'>If ana@example.com has an account, a link is on its way.</p><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Open mail app</div><div style='background:var(--fill);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Send again</div></div></div></div></div><div class="fnode" data-id="new" tabindex="0" role="button" aria-label="Open New password" style="left:688px;top:82px;width:142px"><div class="fhead"><span class="ftitle" title="New password">New password<span class="fsub">Link is valid</span></span><input type="checkbox" class="review" data-review="new" aria-label="Reviewed: New password"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>Choose a new password</h2><div style='height:12px'></div><label style='display:block;font-size:14px;color:var(--muted)'>New password</label><div style='border:1px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 14px'>••••••••••</div><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Save</div></div></div></div></div><div class="fnode" data-id="expired" tabindex="0" role="button" aria-label="Open Link expired" style="left:688px;top:442px;width:142px"><div class="fhead"><span class="ftitle" title="Link expired">Link expired<span class="fsub">Older than 30 minutes</span></span><input type="checkbox" class="review" data-review="expired" aria-label="Reviewed: Link expired"></div><div class="thumb frame-phone" style="width:130px;height:260px"><div class="scale" inert style="width:390px;transform:scale(0.3333)"><div style='padding:44px 22px 28px;font:16px/1.5 var(--sans);color:var(--ink);min-height:780px;background:var(--paper)'><h2 style='margin:0 0 6px;font-size:26px'>This link has expired</h2><p style='margin:0 0 20px;color:var(--muted)'>Links work for 30 minutes.</p><div style='background:var(--note);color:var(--paper);border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-top:8px'>Send a new link</div></div></div></div></div></div></div></div><details class="foutline"><summary>All screens, in path order</summary><ul><li><button type="button" data-open="ask">Reset password</button><input type="checkbox" class="review" data-review="ask" aria-label="Reviewed: Reset password"></li><li><button type="button" data-open="sent">Check your email</button><input type="checkbox" class="review" data-review="sent" aria-label="Reviewed: Check your email"></li><li><button type="button" data-open="new">New password</button><input type="checkbox" class="review" data-review="new" aria-label="Reviewed: New password"></li><li><button type="button" data-open="expired">Link expired</button><input type="checkbox" class="review" data-review="expired" aria-label="Reviewed: Link expired"></li></ul></details><script type="application/json" class="fdata">{"id": "reset-password", "start": "ask", "states": {"ask": {"title": "Reset password", "decision": false, "note": "", "sub": "Ask for the email", "fp": "dc587da6e49a"}, "sent": {"title": "Check your email", "decision": false, "note": "The app shows this screen for every email, known or not.", "sub": "Link sent", "fp": "78510cdca03e"}, "new": {"title": "New password", "decision": false, "note": "", "sub": "Link is valid", "fp": "99a8a5e544f5"}, "expired": {"title": "Link expired", "decision": false, "note": "", "sub": "Older than 30 minutes", "fp": "6ed433159b2c"}}, "links": [{"from": "ask", "to": "sent", "label": "Tap Send link", "error": false, "back": false}, {"from": "sent", "to": "new", "label": "Open link in time", "error": false, "back": false}, {"from": "sent", "to": "expired", "label": "Open link late", "error": true, "back": false}, {"from": "expired", "to": "ask", "label": "Send a new link", "error": false, "back": true}]}</script></section></div><dialog class="fover" aria-labelledby="fover-title"><div class="fobar"><h2 id="fover-title"></h2><input type="checkbox" class="review" aria-label="Reviewed"><span class="spacer"></span><button type="button" class="ftheme" aria-pressed="false">Dark</button><button type="button" class="fclose">Close</button></div><p class="fosub"></p><p class="fonote"></p><div class="foin"></div><div class="foout"></div><div class="fostage"><div class="foscreen"></div></div></dialog>
+</div>
+<script type="application/json" id="flow-images">{}</script><script>(() => {
+  const root = document.documentElement;
+  root.classList.add('js');
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+    set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (_) {} },
+  };
+
+  // Each screenshot is stored once and shared by every place that shows it.
+  const images = JSON.parse(document.getElementById('flow-images').textContent);
+  const fillImages = (el) => el.querySelectorAll('img[data-img]').forEach((img) => { img.src = images[img.dataset.img]; });
+  fillImages(document);
+
+  // Theme: the button names the theme it switches to.
+  const themeButtons = [...document.querySelectorAll('.ftheme')];
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const paintTheme = () => themeButtons.forEach((b) => { b.textContent = isDark() ? 'Light' : 'Dark'; b.setAttribute('aria-pressed', isDark()); });
+  if (store.get('show-me-theme')) root.dataset.theme = store.get('show-me-theme');
+  paintTheme();
+  themeButtons.forEach((b) => b.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    store.set('show-me-theme', root.dataset.theme);
+    paintTheme();
+  }));
+
+  const dlg = document.querySelector('.fover');
+  const overlayCheck = dlg.querySelector('.fobar .review');
+  let open = null;
+  const back = [];
+
+  const sections = [...document.querySelectorAll('.flowsec')];
+  const flows = sections.map((sec) => {
+    const data = JSON.parse(sec.querySelector('.fdata').textContent);
+    const map = sec.querySelector('.fmap'), size = sec.querySelector('.fsize'), stage = sec.querySelector('.stage');
+    const W = parseFloat(stage.style.width), H = parseFloat(stage.style.height);
+    const f = { sec, data, map, size, stage, W, H, zoom: 1 };
+    f.key = (id) => 'show-me-flow:' + data.id + ':' + id;
+    f.reviewed = (id) => store.get(f.key(id)) === data.states[id].fp;
+    return f;
+  });
+
+  // ---------- review marks ----------
+  function paintReviews(f) {
+    const screens = Object.keys(f.data.states).filter((id) => !f.data.states[id].decision);
+    let done = 0;
+    screens.forEach((id) => {
+      const on = f.reviewed(id);
+      if (on) done++;
+      f.sec.querySelectorAll('[data-review="' + CSS.escape(id) + '"]').forEach((c) => { c.checked = on; });
+      f.sec.querySelectorAll('.fnode[data-id="' + CSS.escape(id) + '"]').forEach((n) => n.classList.toggle('reviewed', on));
+    });
+    f.sec.querySelector('.fcount').textContent = 'Reviewed ' + done + ' / ' + screens.length;
+    if (open && open.f === f && !f.data.states[open.id].decision) overlayCheck.checked = f.reviewed(open.id);
+  }
+  function setReview(f, id, on) { store.set(f.key(id), on ? f.data.states[id].fp : null); paintReviews(f); }
+
+  // ---------- zoom and pan ----------
+  function setZoom(f, z, ax, ay) {
+    z = Math.max(0.2, Math.min(2, z));
+    const m = f.map, px = ax ?? m.clientWidth / 2, py = ay ?? m.clientHeight / 2;
+    const cx = (m.scrollLeft + px) / f.zoom, cy = (m.scrollTop + py) / f.zoom;
+    f.zoom = z;
+    f.stage.style.transform = 'scale(' + z + ')';
+    f.size.style.width = f.W * z + 'px';
+    f.size.style.height = f.H * z + 'px';
+    m.scrollLeft = cx * z - px;
+    m.scrollTop = cy * z - py;
+    f.sec.querySelector('.zoom output').textContent = Math.round(z * 100) + '%';
+  }
+  const fitZoom = (f) => Math.min(1, (f.map.clientWidth - 4) / f.W, (innerHeight * 0.72) / f.H);
+
+  flows.forEach((f) => {
+    f.sec.querySelectorAll('[data-zoom]').forEach((b) => b.addEventListener('click', () => {
+      const v = b.dataset.zoom;
+      setZoom(f, v === 'fit' ? fitZoom(f) : Math.round((f.zoom + v * 0.1) * 10) / 10);
+    }));
+    f.map.addEventListener('wheel', (ev) => {
+      if (!ev.ctrlKey && !ev.metaKey) return;
+      ev.preventDefault();
+      const r = f.map.getBoundingClientRect();
+      setZoom(f, f.zoom * (ev.deltaY < 0 ? 1.1 : 0.9), ev.clientX - r.left, ev.clientY - r.top);
+    }, { passive: false });
+    let drag = null;
+    f.map.addEventListener('pointerdown', (ev) => {
+      if (ev.target.closest('.fnode,.fdec,button,input') || ev.button !== 0) return;
+      drag = { x: ev.clientX, y: ev.clientY, l: f.map.scrollLeft, t: f.map.scrollTop };
+      f.map.setPointerCapture(ev.pointerId);
+      f.map.classList.add('dragging');
+    });
+    f.map.addEventListener('pointermove', (ev) => {
+      if (!drag) return;
+      f.map.scrollLeft = drag.l - (ev.clientX - drag.x);
+      f.map.scrollTop = drag.t - (ev.clientY - drag.y);
+    });
+    const stop = () => { drag = null; f.map.classList.remove('dragging'); };
+    f.map.addEventListener('pointerup', stop);
+    f.map.addEventListener('pointercancel', stop);
+    f.sec.addEventListener('change', (ev) => {
+      const c = ev.target.closest('[data-review]');
+      if (c) setReview(f, c.dataset.review, c.checked);
+    });
+    f.sec.addEventListener('click', (ev) => {
+      if (ev.target.closest('input')) return;
+      const t = ev.target.closest('.fnode,.fdec,[data-open]');
+      if (t) openState(f, t.dataset.id || t.dataset.open);
+    });
+    f.sec.addEventListener('keydown', (ev) => {
+      const n = ev.target.closest('.fnode');
+      if (n && !ev.target.closest('input') && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openState(f, n.dataset.id); }
+    });
+    paintReviews(f);
+  });
+
+  // ---------- picker ----------
+  const picker = document.querySelector('.fpick select');
+  let current = flows[0];
+  function showFlow(i) {
+    current = flows[i];
+    flows.forEach((f, j) => { f.sec.hidden = j !== i; });
+    if (picker) picker.value = String(i);
+    if (!current.fitted) { current.fitted = true; setZoom(current, current.W > current.map.clientWidth ? Math.max(0.4, fitZoom(current)) : 1, 0, 0); }
+  }
+  if (picker) picker.addEventListener('change', () => showFlow(Number(picker.value)));
+
+  // ---------- path from the start ----------
+  function pathTo(f, id) {
+    const prev = { [f.data.start]: null }, queue = [f.data.start];
+    while (queue.length) {
+      const v = queue.shift();
+      if (v === id) break;
+      f.data.links.forEach((l, n) => { if (l.from === v && !(l.to in prev)) { prev[l.to] = n; queue.push(l.to); } });
+    }
+    const used = new Set();
+    for (let v = id; prev[v] != null; v = f.data.links[prev[v]].from) used.add(prev[v]);
+    return used;
+  }
+  function paintPath(f, id) {
+    const used = pathTo(f, id), steps = new Set([id]);
+    used.forEach((n) => { steps.add(f.data.links[n].from); });
+    const linkEls = [...f.sec.querySelectorAll('.link')], labelEls = [...f.sec.querySelectorAll('.llbl')];
+    linkEls.forEach((el, n) => el.classList.toggle('onpath', used.has(n)));
+    labelEls.forEach((el, n) => el.classList.toggle('onpath', used.has(n)));
+    f.sec.querySelectorAll('.fnode,.fdec').forEach((el) => {
+      el.classList.toggle('sel', el.dataset.id === id);
+      el.classList.toggle('onpath', steps.has(el.dataset.id) && el.dataset.id !== id);
+    });
+  }
+
+  // ---------- full-size view ----------
+  const button = (f, id, text, cls) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = cls || '';
+    b.textContent = text;
+    b.addEventListener('click', () => openState(f, id, 'step'));
+    return b;
+  };
+  // how: 'map' starts a new trail, 'step' adds to it, 'back' walks it back.
+  function openState(f, id, how = 'map') {
+    const s = f.data.states[id];
+    if (!s) return;
+    if (how === 'step' && open) back.push(open.id);
+    if (how === 'map') back.length = 0;
+    open = { f, id };
+    dlg.querySelector('h2').textContent = s.decision ? 'Decision: ' + s.title : s.title;
+    dlg.querySelector('.fosub').textContent = s.sub;
+    dlg.querySelector('.fonote').textContent = s.note;
+    overlayCheck.hidden = s.decision;
+    overlayCheck.dataset.review = id;
+    overlayCheck.checked = !s.decision && f.reviewed(id);
+    overlayCheck.setAttribute('aria-label', 'Reviewed: ' + s.title);
+
+    const inn = dlg.querySelector('.foin');
+    inn.replaceChildren();
+    const incoming = f.data.links.filter((l) => l.to === id);
+    if (incoming.length) {
+      const lab = document.createElement('span');
+      lab.textContent = 'Comes from';
+      inn.append(lab);
+      incoming.forEach((l) => inn.append(button(f, l.from, '← ' + f.data.states[l.from].title + ' · ' + l.label, l.error ? 'error' : '')));
+    }
+
+    const box = dlg.querySelector('.foscreen');
+    const frame = f.sec.dataset.frame;
+    box.className = 'foscreen ' + (s.decision ? 'decision' : 'frame-' + frame);
+    box.style.maxWidth = s.decision ? '' : f.sec.dataset.width + 'px';
+    box.replaceChildren();
+    if (s.decision) {
+      const q = document.createElement('p');
+      q.textContent = s.title;
+      box.append(q);
+    } else {
+      const src = f.sec.querySelector('.fnode[data-id="' + CSS.escape(id) + '"] .scale');
+      box.innerHTML = src.innerHTML;
+      fillImages(box);
+    }
+
+    const out = dlg.querySelector('.foout');
+    out.replaceChildren();
+    if (back.length) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'plain';
+      b.textContent = '← Back to ' + f.data.states[back[back.length - 1]].title;
+      b.addEventListener('click', () => openState(f, back.pop(), 'back'));
+      out.append(b);
+    }
+    const spacer = document.createElement('span');
+    spacer.className = 'spacer';
+    out.append(spacer);
+    f.data.links.filter((l) => l.from === id).forEach((l) => {
+      const b = button(f, l.to, l.label + ' → ' + f.data.states[l.to].title, 'fwd' + (l.error ? ' error' : ''));
+      out.append(b);
+    });
+    paintPath(f, id);
+    if (!dlg.open) dlg.showModal();
+    dlg.scrollTop = 0;
+    try { history.replaceState(null, '', '#' + encodeURIComponent(f.data.id) + '/' + encodeURIComponent(id)); } catch (_) {}
+  }
+  overlayCheck.addEventListener('change', () => setReview(open.f, open.id, overlayCheck.checked));
+  dlg.querySelector('.fclose').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (ev) => { if (ev.target === dlg) dlg.close(); });
+  dlg.addEventListener('close', () => {
+    const node = open && open.f.sec.querySelector('[data-id="' + CSS.escape(open.id) + '"]');
+    if (node) { node.scrollIntoView({ block: 'nearest', inline: 'nearest' }); node.focus({ preventScroll: true }); }
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {}
+  });
+  dlg.addEventListener('keydown', (ev) => {
+    if (ev.target.closest('input,select')) return;
+    if (ev.key === 'ArrowRight') { const b = dlg.querySelector('.foout .fwd'); if (b) b.click(); }
+    if (ev.key === 'ArrowLeft') { const b = dlg.querySelector('.foout .plain'); if (b) b.click(); }
+  });
+
+  document.addEventListener('keydown', (ev) => {
+    if (dlg.open || ev.target.closest('input,select,textarea')) return;
+    if (ev.key === '+' || ev.key === '=') setZoom(current, current.zoom + 0.1);
+    if (ev.key === '-') setZoom(current, current.zoom - 0.1);
+    if (ev.key === '0') setZoom(current, fitZoom(current));
+  });
+
+  // #flow-id/state-id opens that state.
+  const [hf, hs] = location.hash.slice(1).split('/').map(decodeURIComponent);
+  const start = Math.max(0, flows.findIndex((f) => f.data.id === hf));
+  showFlow(start);
+  if (hs && flows[start].data.states[hs]) openState(flows[start], hs);
+})();
+</script>
+</body>
+</html>

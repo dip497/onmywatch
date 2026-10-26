@@ -1,14 +1,17 @@
 ---
 name: show-me
-description: 'Make the current topic visible instead of explaining it in prose. "/show-me" shows you: the smallest picture in the chat (pseudocode, call tree, file tree, diff, Mermaid). "/show-me sheet" or "/show-me share" makes one HTML engineering sheet from a small JSON spec and premade assets: lettered panels, mechanism diagrams, annotated examples, tables, limits and flows, to open yourself or publish for others. "/show-me flow" maps what was built as a user flow: every screen and decision, joined by labelled links (errors in red, returns dashed), with zoom, a full-size view of each screen, a light and dark switch and review marks.'
+description: 'Make the current topic visible instead of explaining it in prose. "/show-me" shows you: the smallest picture in the chat (pseudocode, call tree, file tree, diff, a small text box diagram); anything that needs a drawn diagram becomes a page. "/show-me sheet" or "/show-me share" makes one HTML engineering sheet from a small JSON spec and premade assets: lettered panels, mechanism diagrams, annotated examples, tables, limits and flows, to open yourself or publish for others. "/show-me flow" maps what was built as a user flow: every screen and decision, joined by labelled links (errors in red, returns dashed), with zoom, a full-size view of each screen, a light and dark switch and review marks.'
 disable-model-invocation: true
+argument-hint: '[sheet | flow | share] [topic]'
 ---
 
 # show-me
 
 Show the idea, do not describe it. The reader understands a picture faster than a paragraph.
 
-Topic: the current conversation, or $ARGUMENTS if given.
+Arguments: $ARGUMENTS
+
+If the first word is `sheet`, `flow` or `share`, it picks the page (levels 4 to 6 below) and the rest is the topic. With no mode word, the arguments are the topic and you pick the level. With no arguments, the topic is the current conversation.
 
 ## Pick the level
 
@@ -18,10 +21,14 @@ Climb only as far as the point needs. Stop at the first level that makes it clea
 |---|---|---|
 | 1. Words | One fact or one rule | Two or three sentences in Simplified Technical English (below) |
 | 2. Text picture | Logic, calls, files, a change | A code block in the chat (shapes below) |
-| 3. Diagram | Several parts talk to each other, or a lifecycle | Mermaid in the chat |
+| 3. Diagram | Several parts talk to each other, or a lifecycle | Up to 4 boxes in one line: a text box diagram in a code block. More boxes, branches or loops: a one-panel sheet (level 4), opened for the reader |
 | 4. Sheet | Many related parts, a comparison, or the reader asked for `sheet` or `share` | One HTML page built from a JSON spec |
 | 5. Walkthrough page | Understanding how something works and why, with more than one view (usually from `/walk-me-through`) | One HTML page with tabs and a guided tour per tab |
 | 6. Flow page | A user journey through UI states: success, loading, errors, retry, permission branches, or the reader asked for `flow` | One HTML page: a map of screens and decisions, a full-size view, review marks |
+
+**Never put Mermaid, SVG or HTML in the chat.** The terminal shows them as source code, not as a picture. A text picture must read correctly in a monospace code block; if it does not, build a page.
+
+**Start from an example.** `examples/README.md` lists one spec per kind of page: sheets, a walkthrough, and flows with mock-ups, real screenshots or no screens. Copy the closest one before you write a spec from nothing.
 
 ## Level 2: text pictures
 
@@ -91,8 +98,28 @@ You write only the content, as a small JSON file. `scripts/build.py` adds the pr
 
    A decision without a source must be `unknown`; the builder refuses it otherwise.
 
+   Three drawn exhibits for what boxes and arrows show badly (example: `examples/walkthroughs/exhibit-gallery.json`):
+
+```json
+"sequence": {"actors": ["Browser", "API", "DB"],
+             "messages": [{"from": "Browser", "to": "API", "text": "POST /login"},
+                          {"from": "API", "to": "API", "text": "check rate limit"},
+                          {"from": "API", "to": "Browser", "text": "401", "reply": true, "error": true}]},
+"schema": {"tables": [{"name": "users", "columns": [["id", "uuid", "pk"], ["email", "text"]]},
+                      {"name": "orders", "columns": [["id", "uuid", "pk"], ["user_id", "uuid", "fk users.id"]]}]},
+"schedule": {"start": "2026-10-01", "end": "2026-12-31", "today": "2026-10-26",
+             "rows": [{"label": "Design", "from": "2026-10-01", "to": "2026-10-20", "status": "done"},
+                      {"label": "Build", "from": "2026-10-20", "to": "2026-11-30", "status": "late"},
+                      {"label": "Beta", "from": "2026-12-01", "to": "2026-12-20", "status": "new"}]}
+```
+
+   - `sequence` is for who calls whom, in time order. `reply` is dashed, `error` is red, `new` is blue, and a message to the same actor loops back.
+   - `schema` is for tables and keys. Mark a column `pk` or `fk table.column`; the builder draws each foreign key from that column. Do not list links yourself.
+   - `schedule` is for work over time. `status` is `done` (green), `late` (red) or `new` (blue, dashed, for planned work); no status is grey.
+
 4. **Diagrams: draw the mechanism, not its name.** Pick `diagram` when the point is which parts talk, where data flows, or the hop being added.
-   - Place nodes on a grid with `col` and `row`. Main path left to right on row 0; stores and branches directly below their owner. At most 3 columns.
+   - Leave out `col` and `row` and the builder places the boxes left to right, in the order the arrows run. Set them only to fix a layout; a node can set just one of them. A state machine is a diagram whose arrows are labelled with events.
+   - Keep to 9 boxes, 12 arrows and 1 or 2 parts marked `new`. The builder warns above that: it is probably two diagrams.
    - Show only the parts the point depends on. To compare options, draw the edge each option adds or removes.
    - Label every edge with what it does: `writes`, `on miss: query`, `polls every 30 s`.
    - Edges go straight or with one bend. If two edges would cross or pass through a box, move the nodes.

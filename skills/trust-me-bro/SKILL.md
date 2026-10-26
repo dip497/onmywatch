@@ -1,11 +1,14 @@
 ---
 name: trust-me-bro
 description: "Use whenever writing, changing, reviewing or cleaning up tests, and when a fix needs proof. A test must guard behaviour against a real bug, not mirror the code. Gates every new test, rejects tests that prove nothing, and audits existing ones."
+argument-hint: '[test file, or code to test]'
 ---
 
 # trust-me-bro
 
 A test that cannot fail for a real bug is a "trust me bro" test: it costs CI time and review and proves nothing. Calling a method and checking it returns what it returns is not a test.
+
+Target: $ARGUMENTS. If that is empty, the tests in the current change.
 
 ## Before you write a test
 

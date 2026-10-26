@@ -2,6 +2,7 @@
 name: talk-is-cheap
 description: 'Senior-engineer lens on every code task: data structures first, cost stated, simplest thing that holds, proof over claims. Does the asked change in the right place, and adds an architecture note with a refactor shape when the structure around it is wrong. On in every session; "stop talk-is-cheap" turns it off.'
 disable-model-invocation: true
+argument-hint: '[code, plan or change to review]'
 ---
 
 # talk-is-cheap

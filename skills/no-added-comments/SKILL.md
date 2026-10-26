@@ -1,11 +1,14 @@
 ---
 name: no-added-comments
 description: Use whenever you write or change code. Keeps the diff free of comments you added and leaves existing comments as they were.
+argument-hint: '[file or change]'
 ---
 
 # no-added-comments
 
 When you change code, do not add comments.
+
+Scope: $ARGUMENTS. If that is empty, every change you make in this session.
 
 - No explanations of why a line exists.
 - No section separators in tests.

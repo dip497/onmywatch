@@ -2,6 +2,7 @@
 name: next-time-faster
 description: 'Run at the end of a long session. Finds the work that cost time and will come back (setting up the environment, starting servers, logins, repeated commands, manual checks, things the user had to explain) and turns only what earns it into the lightest fix: nothing, a doc pointer, a script, a hook, or as a last resort a skill. Proposes first, builds only after approval, proves what it builds.'
 disable-model-invocation: true
+argument-hint: '[session or work to review]'
 ---
 
 # next-time-faster

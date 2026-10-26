@@ -1,11 +1,14 @@
 ---
 name: trust-issues
 description: "First-principles redesign. Apply when a new requirement does not fit the current design, when two or more fixes built on the same assumption have failed, when a design keeps growing special cases, or when asked to rethink or redesign. Separate what must be true from what is only inherited, then rebuild the design from what must be true."
+argument-hint: '[design or requirement to rethink]'
 ---
 
 # trust-issues
 
 Reason from what must be true, not from what already exists.
+
+Design to rethink: $ARGUMENTS. If that is empty, the one in the conversation.
 
 **Why:** An existing design carries the assumptions of the day it was built. Patching it keeps those assumptions, even after they stop being true. Each patch makes the next one harder, and the design ends up held together by special cases.
 

@@ -1,0 +1,48 @@
+{
+  "title": "How onmywatch Works",
+  "meta": "plugin for Claude Code, Codex and Cursor · 0.31.0 · github.com/dip497/onmywatch",
+  "lead": {
+    "answer": "onmywatch is one plugin of 11 skills that three coding agents read from the same folders.",
+    "points": [
+      "Two skills load in every session; the others start when you or the agent call them.",
+      "Only the Claude Code files are edited by hand. A script writes the rest.",
+      "Each skill has evals that score it with and without the plugin."
+    ]
+  },
+  "panels": [
+    {"title": "One root folder serves all three hosts.", "ref": "repository root",
+     "tree": {"root": "`onmywatch/`", "sub": "one plugin, one marketplace per host", "items": [
+       ["`skills/`", "11 folders, one `SKILL.md` in each; shared by every host"],
+       ["`hooks/`", "`always-on.sh` loads two skills at session start"],
+       ["`.claude-plugin/`", "name and version: the only manifest edited by hand"],
+       ["`.codex-plugin/`, `.cursor-plugin/`, `.agents/`", "written by `scripts/sync-hosts.py`"],
+       ["`evals/`", "test cases per skill, run with `claude plugin eval`"]]}},
+    {"title": "Frontmatter decides who can start a skill.", "ref": "skills/brooooo/SKILL.md, lines 1 to 4",
+     "anno": [
+       {"text": "name: brooooo", "why": "the command you type"},
+       {"text": "description: Invoke when the agent goes the wrong way", "why": "the agent matches your words to this"},
+       {"text": "disable-model-invocation: true", "why": "only you can start it", "kind": "wrong"}]},
+    {"title": "Six skills can start on their own.", "ref": "frontmatter and hooks/always-on.sh", "half": true,
+     "table": {"head": ["Who starts it", "Skills"], "rows": [
+       ["ok: Every session", "just-tell-me, talk-is-cheap"],
+       ["ok: You or the agent", "onmywatch, trust-me-bro, lets-build-pyramids, trust-issues, walk-me-through, no-added-comments"],
+       ["bad: Only you", "brooooo, next-time-faster, show-me"]]}},
+    {"title": "The plugin raises the scores it is tested on.", "ref": "README, Evals, 3 runs per case", "half": true,
+     "limits": [
+       {"label": "Design review, audit log", "value": "0.90, was 0.57", "pct": 90},
+       {"label": "Users in two orgs", "value": "1.00, was 0.25", "pct": 100},
+       {"label": "Estimate in agent time", "value": "1.00, was 0.60", "pct": 100}]},
+    {"title": "A change reaches users only after a version bump.", "ref": "dashed arrows are steps you run",
+     "caption": "Without a new version, `plugin update` keeps the copy already in the cache.",
+     "diagram": {
+       "nodes": [
+         {"id": "repo", "label": "Local repo", "sub": "edit, bump, sync", "col": 0, "row": 0},
+         {"id": "gh", "label": "GitHub", "sub": "dip497/onmywatch", "col": 1, "row": 0},
+         {"id": "cache", "label": "Plugin cache", "sub": "one folder per version", "col": 2, "row": 0, "store": true},
+         {"id": "session", "label": "Next session", "sub": "Claude Code, Codex, Cursor", "col": 2, "row": 1}],
+       "edges": [
+         {"from": "repo", "to": "gh", "label": "git push", "new": true},
+         {"from": "gh", "to": "cache", "label": "plugin update", "new": true},
+         {"from": "cache", "to": "session", "label": "loads skills"}]}}
+  ]
+}

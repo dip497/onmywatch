@@ -1,11 +1,14 @@
 ---
 name: onmywatch
 description: Entry point for onmywatch. Use at the start of any non-trivial task to pick the onmywatch skills that apply.
+argument-hint: '[task]'
 ---
 
 # onmywatch
 
 Read the request, pick the skills below that apply, and follow them.
+
+Task: $ARGUMENTS. If that is empty, the current request.
 
 ## Skills
 

@@ -1,0 +1,44 @@
+{
+  "title": "Choosing the Flow Layout",
+  "meta": "design record · show-me 0.30.0 · decided 2026-10-26",
+  "lead": {
+    "answer": "Flow pages lay themselves out in Python at build time, with nothing new to install.",
+    "points": [
+      "Page size was the real limit, not the layout.",
+      "Each screenshot is now stored once and shrunk.",
+      "When one map gets too big, split it into several flows on one page."
+    ]
+  },
+  "panels": [
+    {"title": "Python at build time won on install and checks.", "ref": "lets-build-pyramids review, four designs",
+     "table": {"head": ["Design", "40 boxes", "400 boxes", "Lost because"], "rows": [
+       ["A. Author places every box", "ok: Holds", "bad: 400 hand-placed boxes", "slow to write"],
+       ["B. Python layout at build time", "ok: Holds", "ok: Holds; map too big to read", "chosen"],
+       ["C. Graphviz `dot` at build time", "ok: Holds", "ok: Holds", "needs a system install"],
+       ["D. dagre in the browser", "ok: Holds", "ok: Holds", "the build cannot check the layout"]]}},
+    {"title": "The builder lays out a flow in four steps.", "ref": "scripts/flow.py, scripts/graph_layout.py",
+     "diagram": {"nodes": [
+       {"id": "spec", "label": "flows JSON", "sub": "states and links", "col": 0, "row": 0, "store": true},
+       {"id": "graph", "label": "read_graph", "sub": "flow.py:78", "col": 1, "row": 0},
+       {"id": "loops", "label": "find_returns", "sub": "graph_layout.py:10", "col": 2, "row": 0},
+       {"id": "place", "label": "columns", "sub": "graph_layout.py:36", "col": 2, "row": 1},
+       {"id": "route", "label": "route", "sub": "flow.py:130", "col": 1, "row": 1}],
+      "edges": [
+       {"from": "spec", "to": "graph", "label": "checks labels"},
+       {"from": "graph", "to": "loops", "label": "depth-first"},
+       {"from": "loops", "to": "place", "label": "4 sweeps"},
+       {"from": "place", "to": "route", "label": "right angles"}]}},
+    {"title": "Two copies of each screenshot would break sharing.", "ref": "estimate: 40 phone screenshots of 400 KB", "half": true,
+     "limits": [
+       {"label": "Two copies, as first built", "value": "about 42 MB", "pct": 100},
+       {"label": "One copy", "value": "about 21 MB", "pct": 50},
+       {"label": "Share limit", "value": "16 MB", "pct": 38}]},
+    {"title": "Shrinking made a test page tiny.", "ref": "one 1179×2556 screenshot used twice", "half": true,
+     "table": {"head": ["Step", "Result"], "rows": [
+       ["Copies in the page", "ok: 1"],
+       ["Format", "ok: WebP at twice the display width"],
+       ["Whole page", "ok: 37 KB"]]}},
+    {"title": "The build and check steps did not change.", "ref": "what stays the same",
+     "flow": [{"text": "JSON spec"}, {"text": "`build.py`"}, {"text": "`check.py`"}, {"text": "one HTML file"}, {"text": "share as a link", "new": true}]}
+  ]
+}

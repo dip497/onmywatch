@@ -13,8 +13,10 @@ import json
 import sys
 from html import escape as e
 
+from graph_layout import columns, find_returns
+
 GAP_X, GAP_Y, HEAD, PAD = 170, 36, 46, 6
-LANE_STEP, PORT_STEP = 14, 22
+LANE_STEP, PORT_STEP = 22, 22
 DECISION_W, DECISION_H = 180, 72
 FRAMES = {"phone": (130, 260), "browser": (230, 170), "none": (230, 170)}
 
@@ -62,6 +64,17 @@ def screen_html(s, where, spec_dir, width, images, exhibit, exhibit_keys):
 
 # ---------- graph ----------
 
+def reach(links, start):
+    seen, todo = {start}, [start]
+    while todo:
+        v = todo.pop()
+        for ln in links:
+            if ln["from"] == v and ln["to"] not in seen:
+                seen.add(ln["to"])
+                todo.append(ln["to"])
+    return seen
+
+
 def read_graph(f):
     states = f.get("states") or fail(f"'{f.get('id')}' has no states")
     by_id = {}
@@ -84,76 +97,17 @@ def read_graph(f):
     return states, by_id, links, start
 
 
-def find_returns(order, links, start):
-    """Depth-first from the start. A link to a state still on the stack is a return."""
-    out = {i: [] for i in order}
-    for n, ln in enumerate(links):
-        out[ln["from"]].append(n)
-    seen, on_stack, back, visit = set(), set(), set(), []
-
-    def dfs(v):
-        seen.add(v)
-        on_stack.add(v)
-        visit.append(v)
-        for n in out[v]:
-            w = links[n]["to"]
-            if w in on_stack:
-                back.add(n)
-            elif w not in seen:
-                dfs(w)
-        on_stack.discard(v)
-
-    sys.setrecursionlimit(10000)
-    dfs(start)
-    lost = [i for i in order if i not in seen]
-    if lost:
-        fail(f"no path from '{start}' to: {', '.join(lost)}. Add a link or remove the state")
-    return back, visit
-
-
-def layout(states, by_id, links, back, visit, size):
-    ids = [s["id"] for s in states]
-    fwd = [ln for n, ln in enumerate(links) if n not in back]
-    col = {i: 0 for i in ids}
-    for v in visit:
-        if "col" in by_id[v]:
-            col[v] = by_id[v]["col"]
-    changed = True
-    while changed:
-        changed = False
-        for ln in fwd:
-            a, b = ln["from"], ln["to"]
-            if "col" not in by_id[b] and col[b] < col[a] + 1:
-                col[b] = col[a] + 1
-                changed = True
-    cols = {}
-    for v in visit:
-        cols.setdefault(col[v], []).append(v)
-    parents = {i: [ln["from"] for ln in fwd if ln["to"] == i] for i in ids}
-    children = {i: [ln["to"] for ln in fwd if ln["from"] == i] for i in ids}
-    place = {v: n for c in cols.values() for n, v in enumerate(c)}
-
-    def sweep(keys, nbrs):
-        for c in keys:
-            def mean(v):
-                ns = [place[u] for u in nbrs[v] if col[u] != col[v]]
-                return sum(ns) / len(ns) if ns else place[v]
-            cols[c].sort(key=lambda v: (by_id[v].get("row", 1e9), mean(v)))
-            for n, v in enumerate(cols[c]):
-                place[v] = n
-    keys = sorted(cols)
-    for _ in range(4):
-        sweep(keys[1:], parents)
-        sweep(keys[-2::-1], children)
-
+def layout(by_id, links, back, visit, size):
+    pinned = {v: {k: by_id[v][k] for k in ("col", "row") if k in by_id[v]} for v in visit}
+    col, cols, parents = columns(visit, links, back, pinned)
     xs, x = {}, 40
-    for c in keys:
+    for c, members in cols.items():
         xs[c] = x
-        x += max(size(v)[0] for v in cols[c]) + GAP_X
+        x += max(size(v)[0] for v in members) + GAP_X
     box = {}
-    for c in keys:
+    for c, members in cols.items():
         bottom = 40
-        for v in cols[c]:
+        for v in members:
             w, h = size(v)
             ps = [box[p] for p in parents[v] if p in box]
             want = (sum(p[1] + p[3] / 2 for p in ps) / len(ps) - h / 2) if ps else bottom
@@ -181,6 +135,11 @@ def route(links, back, box, col, xs, warnings, fid):
     for n, ln in enumerate(links):
         outs.setdefault(ln["from"], []).append(n)
         ins.setdefault(ln["to"], []).append(n)
+    middle = {k: b[1] + b[3] / 2 for k, b in box.items()}
+    for v, lst in outs.items():
+        lst.sort(key=lambda n: middle[links[n]["to"]])
+    for v, lst in ins.items():
+        lst.sort(key=lambda n: middle[links[n]["from"]])
 
     def port(group, v, n):
         lst = group[v]
@@ -265,14 +224,18 @@ def flow_section(fi, f, spec_dir, images, exhibit, exhibit_keys, code, warnings)
     width = f.get("width", 390 if frame == "phone" else 720)
     tw, th = FRAMES[frame]
     states, by_id, links, start = read_graph(f)
-    back, visit = find_returns([s["id"] for s in states], links, start)
+    reached = reach(links, start)
+    lost = [s["id"] for s in states if s["id"] not in reached]
+    if lost:
+        fail(f"no path from '{start}' to: {', '.join(lost)}. Add a link or remove the state")
+    back, visit = find_returns([s["id"] for s in states], links, [start])
 
     def size(v):
         if by_id[v].get("decision"):
             return DECISION_W, DECISION_H
         return tw + 2 * PAD, HEAD + th + 3 * PAD
 
-    box, col, xs = layout(states, by_id, links, back, visit, size)
+    box, col, xs = layout(by_id, links, back, visit, size)
     paths = route(links, back, box, col, xs, warnings, fid)
     crossings = count_crossings([p for n, p in enumerate(paths) if n not in back])
     if crossings:

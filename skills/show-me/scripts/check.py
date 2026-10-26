@@ -48,7 +48,7 @@ class Sheet(HTMLParser):
         if self.cur is not None and (cls & EXHIBITS or tag == "table"):
             if not any(c & EXHIBITS or t == "table" for t, c in self.stack[:-1] if t != "section"):
                 self.cur["exhibits"].add(tag if tag == "table" else min(cls & EXHIBITS))
-        if tag == "path" and "edge" in cls:
+        if tag == "path" and "edge" in cls and "fk" not in cls:
             self.edges += 1
         if tag == "text" and "elbl" in cls:
             self.edge_labels += 1
@@ -101,7 +101,9 @@ css = sheet.style
 
 light = tokens(re.search(r":root\s*\{(.*?)\}", css, re.S).group(1))
 dark_m = re.search(r':root\[data-theme="dark"\]\s*\{(.*?)\}', css, re.S)
-for name, theme in (("light", light), ("dark", {**light, **tokens(dark_m.group(1))} if dark_m else None)):
+dark = {**light, **tokens(dark_m.group(1))} if dark_m else None
+themes = [("light", light), ("dark", dark)]
+for name, theme in themes:
     if theme is None:
         report("ERROR", "no dark theme tokens")
         continue
