@@ -6,17 +6,24 @@
     set(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (_) {} },
   };
 
-  // Each screenshot is stored once and shared by every place that shows it.
-  const images = JSON.parse(document.getElementById('flow-images').textContent);
-  const fillImages = (el) => el.querySelectorAll('img[data-img]').forEach((img) => { img.src = images[img.dataset.img]; });
-  fillImages(document);
-
   // Theme: the button names the theme it switches to.
   const themeButtons = [...document.querySelectorAll('.ftheme')];
-  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  const paintTheme = () => themeButtons.forEach((b) => { b.textContent = isDark() ? 'Light' : 'Dark'; b.setAttribute('aria-pressed', isDark()); });
+  const darkMedia = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : darkMedia.matches;
+
+  // Each screenshot is stored once and shared by every place that shows it. A screen with a dark
+  // screenshot shows it in the dark theme.
+  const images = JSON.parse(document.getElementById('flow-images').textContent);
+  const fillImages = (el) => el.querySelectorAll('img[data-img]').forEach((img) => {
+    img.src = images[(isDark() && img.dataset.imgDark) || img.dataset.img];
+  });
+  const paintTheme = () => {
+    themeButtons.forEach((b) => { b.textContent = isDark() ? 'Light' : 'Dark'; b.setAttribute('aria-pressed', isDark()); });
+    fillImages(document);
+  };
   if (store.get('show-me-theme')) root.dataset.theme = store.get('show-me-theme');
   paintTheme();
+  darkMedia.addEventListener('change', paintTheme);
   themeButtons.forEach((b) => b.addEventListener('click', () => {
     root.dataset.theme = isDark() ? 'light' : 'dark';
     store.set('show-me-theme', root.dataset.theme);
@@ -183,15 +190,20 @@
     const box = dlg.querySelector('.foscreen');
     const frame = f.sec.dataset.frame;
     box.className = 'foscreen ' + (s.decision ? 'decision' : 'frame-' + frame);
-    box.style.maxWidth = s.decision ? '' : f.sec.dataset.width + 'px';
     box.replaceChildren();
     if (s.decision) {
+      box.style.maxWidth = '';
       const q = document.createElement('p');
       q.textContent = s.title;
       box.append(q);
     } else {
-      const src = f.sec.querySelector('.fnode[data-id="' + CSS.escape(id) + '"] .scale');
-      box.innerHTML = src.innerHTML;
+      const node = f.sec.querySelector('.fnode[data-id="' + CSS.escape(id) + '"]');
+      box.style.maxWidth = node.dataset.width + 'px';
+      const inner = document.createElement('div');
+      inner.className = 'foinner';
+      inner.style.width = node.dataset.width + 'px';
+      inner.innerHTML = node.querySelector('.scale').innerHTML;
+      box.append(inner);
       fillImages(box);
     }
 
@@ -214,9 +226,27 @@
     });
     paintPath(f, id);
     if (!dlg.open) dlg.showModal();
+    fitScreen();
     dlg.scrollTop = 0;
     try { history.replaceState(null, '', '#' + encodeURIComponent(f.data.id) + '/' + encodeURIComponent(id)); } catch (_) {}
   }
+  // Every screen is drawn at its own width, then scaled to fit the view. A click on a scaled screen
+  // shows it at its real width, scrolling inside the view; a second click fits it again.
+  const screenBox = dlg.querySelector('.foscreen');
+  function fitScreen() {
+    const inner = screenBox.querySelector('.foinner');
+    if (!inner) return;
+    const scale = Math.min(1, screenBox.clientWidth / parseFloat(inner.style.width));
+    const actual = screenBox.classList.contains('actual');
+    inner.style.zoom = actual ? 1 : scale;
+    screenBox.classList.toggle('zoomable', scale < 1);
+  }
+  screenBox.addEventListener('click', () => {
+    if (!screenBox.classList.contains('zoomable')) return;
+    screenBox.classList.toggle('actual');
+    fitScreen();
+  });
+  addEventListener('resize', () => { if (dlg.open) fitScreen(); });
   overlayCheck.addEventListener('change', () => setReview(open.f, open.id, overlayCheck.checked));
   dlg.querySelector('.fclose').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', (ev) => { if (ev.target === dlg) dlg.close(); });

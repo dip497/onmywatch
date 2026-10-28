@@ -1,14 +1,22 @@
 """Build a show-me page from a small JSON spec, then check it.
 
-Usage: python3 build.py page.json [out.html] [--open-all]
+Usage: python3 build.py page.json [out.html] [--open-all] [--no-render]
 --open-all writes every step open and every view visible, for review screenshots.
+--no-render skips render.py (the measured check in Chrome and the screenshots).
 A spec with "panels" builds a one-screen sheet. A spec with "views" builds a walkthrough:
 tabs, one guided tour of steps per tab. A spec with "flows" builds flow pages: screens and
 decisions joined by labelled links, with zoom, review marks and a full-size view (see flow.py).
-Writes out.html (default: next to the JSON) with the
-CSS inlined, runs check.py, exits 1 on a check error.
+Writes out.html (default: next to the JSON) with the CSS inlined, runs check.py, then render.py,
+which opens the page in headless Chrome, measures it and saves screenshots in shots/ beside the
+spec. Exits 1 on any ERROR.
+
+The spec is the only source. Extra styles go in its "css" key and a part the builder lacks goes in
+an "html" exhibit, so both survive a rebuild. The page records a hash of itself; if someone edits
+it by hand, the next build stops instead of throwing the edit away.
 """
+import hashlib
 import json
+import re
 import subprocess
 import sys
 from html import escape as e
@@ -138,6 +146,10 @@ def _clear(points, others):
     return not any(_hits(s, r) for s in segs for r in others)
 
 
+# More columns than this do not fit a panel at full size, so the layout runs top to bottom instead.
+MAX_DIAGRAM_COLS = 4
+
+
 def place_nodes(d, claim):
     """Nodes without `col` and `row` get them from the layered layout; a node may pin either one."""
     ids = [n["id"] for n in d["nodes"]]
@@ -157,7 +169,11 @@ def place_nodes(d, claim):
     back, visit = find_returns(ids, d["edges"], [])
     pinned = {n["id"]: {k: n[k] for k in ("col", "row") if k in n} for n in d["nodes"]}
     col, cols, _ = columns(visit, d["edges"], back, pinned)
-    return [{**n, "col": col[n["id"]], "row": cols[col[n["id"]]].index(n["id"])} for n in d["nodes"]]
+    placed = [{**n, "col": col[n["id"]], "row": cols[col[n["id"]]].index(n["id"])} for n in d["nodes"]]
+    widest = max(len(c) for c in cols.values())
+    if len(cols) > MAX_DIAGRAM_COLS and len(cols) > widest and not any(pinned.values()):
+        placed = [{**n, "col": n["row"], "row": n["col"]} for n in placed]
+    return placed
 
 
 def diagram(d, claim):
@@ -244,14 +260,15 @@ def diagram(d, claim):
     W = used_right
     marker = ('<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" '
               'orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>')
-    svg = (f'<svg viewBox="0 0 {W:.0f} {H:.0f}" role="img" aria-label="{e(claim)}" style="min-width:{min(W * 0.85, 680):.0f}px;max-width:{W * 1.1:.0f}px">'
+    svg = (f'<svg viewBox="0 0 {W:.0f} {H:.0f}" role="img" aria-label="{e(claim)}" style="min-width:{W * diagrams.MIN_SCALE:.0f}px;max-width:{W * 1.1:.0f}px">'
            f'{marker}{"".join(edges)}{"".join(labels)}{"".join(shapes)}</svg>')
     return f'<figure class="diagram"><div class="scroll">{svg}</div></figure>'
 
 
 EXHIBITS = {"diagram": None, "tree": tree, "anno": anno, "table": table, "limits": limits, "flow": flow,
             "timeline": timeline, "path": path, "decisions": decisions, "gaps": gaps, "code": snippet,
-            "sequence": None, "schema": None, "schedule": None}
+            "sequence": None, "schema": None, "schedule": None,
+            "html": lambda h: f'<div class="custom">{h}</div>'}
 
 
 def exhibit(item, claim, where, required=True):
@@ -313,6 +330,14 @@ if(views.length)show(0);})();
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 OPEN_ALL = "--open-all" in sys.argv
+RENDER = "--no-render" not in sys.argv
+MARK = re.compile(r"<!-- built by show-me build\.py from (.+?); edit the spec, not this file\. sha256:([0-9a-f]{64}) -->\n")
+
+
+def mark(spec_name, page):
+    """The line that records which spec made the page and the hash of everything else in it."""
+    return (f"<!-- built by show-me build.py from {spec_name}; edit the spec, not this file. "
+            f"sha256:{hashlib.sha256(page.encode()).hexdigest()} -->\n")
 spec = json.loads(Path(args[0]).read_text())
 SPEC_DIR = Path(args[0]).resolve().parent
 out = Path(args[1]) if len(args) > 1 else Path(args[0]).with_suffix(".html")
@@ -331,6 +356,7 @@ else:
     main = f'<div class="grid">{"".join(panel(i, p) for i, p in enumerate(spec["panels"]))}</div>'
     kind, script = "sheet", ""
 css = (HERE.parent / "assets" / "sheet.css").read_text()
+extra = f"\n<style>\n{spec['css']}\n</style>" if spec.get("css") else ""
 page = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -340,7 +366,7 @@ page = f"""<!doctype html>
 {FONTS}
 <style>
 {css}
-</style>
+</style>{extra}
 </head>
 <body>
 <div class="sheet {kind}">
@@ -352,8 +378,19 @@ page = f"""<!doctype html>
 </body>
 </html>
 """
+if out.exists():
+    old = out.read_text()
+    m = MARK.search(old)
+    if m and hashlib.sha256(MARK.sub("", old, count=1).encode()).hexdigest() != m.group(2):
+        sys.exit(f"{out} was edited by hand after it was built; building again would lose that edit.\n"
+                 f"Move the change into {Path(args[0]).name}: styles go in its \"css\" key, a missing part goes "
+                 f"in an \"html\" exhibit. Then delete {out.name} and build again.")
+page = page.replace("<!doctype html>\n", "<!doctype html>\n" + mark(Path(args[0]).name, page), 1)
 out.write_text(page)
 print(f"wrote {out}")
 for w in warnings:
     print(f"WARN {w}")
-sys.exit(subprocess.run([sys.executable, str(HERE / "check.py"), str(out)]).returncode)
+status = subprocess.run([sys.executable, str(HERE / "check.py"), str(out)]).returncode
+if RENDER:
+    status |= subprocess.run([sys.executable, str(HERE / "render.py"), str(out), str(SPEC_DIR / "shots")]).returncode
+sys.exit(status)

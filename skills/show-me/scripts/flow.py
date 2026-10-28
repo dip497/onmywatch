@@ -18,6 +18,7 @@ from graph_layout import columns, find_returns
 GAP_X, GAP_Y, HEAD, PAD = 170, 36, 46, 6
 LANE_STEP, PORT_STEP = 22, 22
 DECISION_W, DECISION_H = 180, 72
+UNTANGLE_PASSES = 4
 FRAMES = {"phone": (130, 260), "browser": (230, 170), "none": (230, 170)}
 
 
@@ -27,36 +28,68 @@ def fail(msg):
 
 # ---------- screens ----------
 
-def load_image(path, width):
-    """Read a screenshot once. Shrink it to twice the display width if Pillow is there."""
+def png_width(raw):
+    return int.from_bytes(raw[16:20], "big") if raw[:8] == b"\x89PNG\r\n\x1a\n" else None
+
+
+def load_image(path, width, crop, where, warnings):
+    """Read a screenshot once: cut it to `crop` [x, y, w, h], then shrink it to twice the display width.
+
+    Returns the mime type, the bytes, and the pixel width before shrinking. Crop needs Pillow;
+    without Pillow the file goes in as it is.
+    """
     raw = path.read_bytes()
     try:
         from PIL import Image
-        im = Image.open(io.BytesIO(raw))
-        if im.width > width * 2:
-            im = im.resize((width * 2, round(im.height * width * 2 / im.width)), Image.LANCZOS)
-        out = io.BytesIO()
-        im.save(out, "WEBP", quality=82)
-        if out.tell() < len(raw):
-            return "image/webp", out.getvalue()
     except ImportError:
-        pass
+        if crop:
+            fail(f"{where}: 'crop' needs Pillow. Install it with: python3 -m pip install Pillow")
+        ext = path.suffix.lower().lstrip(".")
+        return f"image/{'jpeg' if ext == 'jpg' else ext}", raw, png_width(raw)
+    im = Image.open(io.BytesIO(raw))
+    if crop:
+        if len(crop) != 4 or crop[2] <= 0 or crop[3] <= 0:
+            fail(f"{where}: 'crop' is [x, y, width, height] in image pixels")
+        x, y, w, h = crop
+        if x < 0 or y < 0 or x + w > im.width or y + h > im.height:
+            fail(f"{where}: crop {crop} goes outside the {im.width}×{im.height} image")
+        im = im.crop((x, y, x + w, y + h))
+    source_w = im.width
+    if im.width > width * 2:
+        im = im.resize((width * 2, round(im.height * width * 2 / im.width)), Image.LANCZOS)
+    out = io.BytesIO()
+    im.save(out, "WEBP", quality=82)
+    if out.tell() < len(raw) or crop:
+        return "image/webp", out.getvalue(), source_w
     ext = path.suffix.lower().lstrip(".")
-    return f"image/{'jpeg' if ext == 'jpg' else ext}", raw
+    return f"image/{'jpeg' if ext == 'jpg' else ext}", raw, source_w
 
 
-def screen_html(s, where, spec_dir, width, images, exhibit, exhibit_keys):
-    kinds = [k for k in ("image", "html", *exhibit_keys) if k in s]
+def screen_html(s, where, spec_dir, width, images, exhibit, exhibit_keys, warnings):
+    kinds = [k for k in dict.fromkeys(("image", "html", *exhibit_keys)) if k in s]
     if len(kinds) != 1:
         fail(f"{where}: needs exactly one of image, html, {', '.join(exhibit_keys)}; got {kinds or 'none'}")
+    for k in ("imageDark", "crop"):
+        if k in s and "image" not in s:
+            fail(f"{where}: '{k}' only works with 'image'")
     if "image" in s:
-        src = spec_dir / s["image"]
-        if not src.is_file():
-            fail(f"{where}: image {src} not found")
-        mime, data = load_image(src, width)
-        key = hashlib.sha1(data).hexdigest()[:12]
-        images[key] = f"data:{mime};base64,{base64.b64encode(data).decode()}"
-        return f'<img data-img="{key}" alt="{e(s["title"])}">'
+        keys = []
+        for k in ("image", "imageDark"):
+            if k not in s:
+                continue
+            src = spec_dir / s[k]
+            if not src.is_file():
+                fail(f"{where}: {k} {src} not found")
+            mime, data, source_w = load_image(src, width, s.get("crop"), where, warnings)
+            if source_w and source_w < width * 2:
+                warnings.append(f"{where}: {k} has {source_w} pixels across for a {width}px screen, so it looks soft on "
+                                f"most screens. Take screenshots at device scale 2 (render.py does), or set this "
+                                f"state's 'width' to {source_w // 2} or less")
+            key = hashlib.sha1(data).hexdigest()[:12]
+            images[key] = f"data:{mime};base64,{base64.b64encode(data).decode()}"
+            keys.append(key)
+        dark = f' data-img-dark="{keys[1]}"' if len(keys) > 1 else ""
+        return f'<img data-img="{keys[0]}"{dark} alt="{e(s["title"])}">'
     if "html" in s:
         return s["html"]
     return f'<div class="body">{exhibit(s, s["title"], where)}</div>'
@@ -192,6 +225,44 @@ def route(links, back, box, col, xs, warnings, fid):
     return paths
 
 
+def untangle(by_id, links, back, visit, size, fid):
+    """Layered layout, then the transpose step of Gansner et al. (1993): swap neighbours in a column
+    while the routed map has fewer crossings. States with a 'row' keep their place."""
+    def build(order):
+        view = {v: {**by_id[v], **order.get(v, {})} for v in visit}
+        box, col, xs = layout(view, links, back, visit, size)
+        return box, col, xs, count_crossings([p for n, p in enumerate(route(links, back, box, col, xs, [], fid)) if n not in back])
+
+    box, col, xs, best = build({})
+    if not best:
+        return box, col, xs
+    rows = {}
+    for v in visit:
+        rows.setdefault(col[v], []).append(v)
+    for c in rows:
+        rows[c].sort(key=lambda v: box[v][1])
+    order = {v: {"row": n} for c in rows for n, v in enumerate(rows[c]) if "row" not in by_id[v]}
+    for _ in range(UNTANGLE_PASSES):
+        better = False
+        for c, members in rows.items():
+            for i in range(len(members) - 1):
+                a, b = members[i], members[i + 1]
+                if "row" in by_id[a] or "row" in by_id[b]:
+                    continue
+                members[i], members[i + 1] = b, a
+                trial = {**order, a: {"row": i + 1}, b: {"row": i}}
+                tb, tc, tx, n = build(trial)
+                if n < best:
+                    best, order, box, col, xs, better = n, trial, tb, tc, tx, True
+                    if not best:
+                        return box, col, xs
+                else:
+                    members[i], members[i + 1] = a, b
+        if not better:
+            break
+    return box, col, xs
+
+
 def label_spot(pts, text):
     """Centre of the longest horizontal piece; a return labels its lane."""
     w = len(text) * 7.6 + 14
@@ -235,11 +306,13 @@ def flow_section(fi, f, spec_dir, images, exhibit, exhibit_keys, code, warnings)
             return DECISION_W, DECISION_H
         return tw + 2 * PAD, HEAD + th + 3 * PAD
 
-    box, col, xs = layout(by_id, links, back, visit, size)
+    box, col, xs = untangle(by_id, links, back, visit, size, fid)
     paths = route(links, back, box, col, xs, warnings, fid)
     crossings = count_crossings([p for n, p in enumerate(paths) if n not in back])
     if crossings:
-        warnings.append(f"flow '{fid}': {crossings} line crossings; set 'row' on states to untangle")
+        warnings.append(f"flow '{fid}': {crossings} line crossing(s) left after automatic reordering. A crossing is "
+                        "allowed. To try another order, set 'row' or 'col' on states. Never remove a real link or "
+                        "state to clear this warning")
     min_x = min(min(x for x, _ in p) for p in paths) if paths else 0
     min_y = min([b[1] for b in box.values()] + [y for p in paths for _, y in p]) - 40
     shift_x, shift_y = 40 - min(40, min_x), -min_y
@@ -258,14 +331,15 @@ def flow_section(fi, f, spec_dir, images, exhibit, exhibit_keys, code, warnings)
             nodes.append(f'<button type="button" class="fdec" data-id="{e(v)}" style="left:{x:.0f}px;top:{y:.0f}px;'
                          f'width:{w}px;height:{h}px">{code(s["decision"])}</button>')
             continue
-        shot = screen_html(s, f"state '{v}'", spec_dir, width, images, exhibit, exhibit_keys)
+        sw = s.get("width", width)
+        shot = screen_html(s, f"state '{v}'", spec_dir, sw, images, exhibit, exhibit_keys, warnings)
         screens[v] = shot
         sub = f'<span class="fsub">{code(s["sub"])}</span>' if s.get("sub") else ""
-        nodes.append(f'<div class="fnode" data-id="{e(v)}" tabindex="0" role="button" aria-label="Open {e(s["title"])}" '
+        nodes.append(f'<div class="fnode" data-id="{e(v)}" data-width="{sw}" tabindex="0" role="button" aria-label="Open {e(s["title"])}" '
                      f'style="left:{x:.0f}px;top:{y:.0f}px;width:{w}px">'
                      f'<div class="fhead"><span class="ftitle" title="{e(s["title"])}">{code(s["title"])}{sub}</span>{check(v, s["title"])}</div>'
                      f'<div class="thumb frame-{frame}" style="width:{tw}px;height:{th}px"><div class="scale" inert '
-                     f'style="width:{width}px;transform:scale({tw / width:.4f})">{shot}</div></div></div>')
+                     f'style="width:{sw}px;transform:scale({tw / sw:.4f})">{shot}</div></div></div>')
 
     edges, labels = [], []
     for n, (ln, pts) in enumerate(zip(links, paths)):

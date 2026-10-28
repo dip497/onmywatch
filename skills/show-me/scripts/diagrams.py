@@ -11,6 +11,9 @@ from html import escape as e
 from graph_layout import columns, find_returns
 
 CHAR = 7.6
+# Diagram text is 13px. A diagram is never drawn below 12/13 of its width, so text stays at 12px
+# or more; a wider one scrolls in its panel instead of shrinking.
+MIN_SCALE = 12 / 13
 
 
 def fail(msg):
@@ -19,7 +22,7 @@ def fail(msg):
 
 def svg(w, h, claim, body, cls):
     return (f'<figure class="diagram {cls}"><div class="scroll"><svg viewBox="0 0 {w:.0f} {h:.0f}" role="img" '
-            f'aria-label="{e(claim)}" style="min-width:{min(w * 0.85, 680):.0f}px;max-width:{w * 1.1:.0f}px">'
+            f'aria-label="{e(claim)}" style="min-width:{w * MIN_SCALE:.0f}px;max-width:{w * 1.1:.0f}px">'
             '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" '
             'orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>'
             f'{body}</svg></div></figure>')

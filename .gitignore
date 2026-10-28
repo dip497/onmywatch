@@ -1,3 +1,4 @@
 evals/results/
 evals/**/*-*-*-*-*.jsonl
 evals/**/*-*-*-*-*/
+skills/show-me/examples/**/shots/

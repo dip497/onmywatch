@@ -7,7 +7,7 @@ import re
 import sys
 from html.parser import HTMLParser
 
-EXHIBITS = {"tree", "anno", "limit", "flow", "timeline", "diagram", "path", "decisions", "gaps", "code"}
+EXHIBITS = {"tree", "anno", "limit", "flow", "timeline", "diagram", "path", "decisions", "gaps", "code", "custom"}
 BANNED = ["utilize", "leverage", "ensure", "robust", "seamless", "in order to", "prior to", "commence", "very", "basically"]
 PAIRS = [("ink", "paper"), ("muted", "paper"), ("muted", "fill"), ("note", "paper"), ("note", "note-soft"),
          ("ok", "paper"), ("bad", "paper"), ("badge-ink", "badge"), ("paper", "ok"), ("note", "fill")]
